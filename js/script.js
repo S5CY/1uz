@@ -120,9 +120,21 @@ function switchPage(pageId) {
 function loadStorage() {
     const save = localStorage.getItem("loveTestSave");
     if (save) {
-        const data = JSON.parse(save);
-        currentQ = data.currentQ;
-        answerScores = data.scores;
+        try {
+            const data = JSON.parse(save);
+            if (
+                Number.isInteger(data.currentQ) &&
+                data.currentQ >= 0 &&
+                data.currentQ < questionList.length &&
+                Array.isArray(data.scores) &&
+                data.scores.length === questionList.length
+            ) {
+                currentQ = data.currentQ;
+                answerScores = data.scores;
+            }
+        } catch {
+            localStorage.removeItem("loveTestSave");
+        }
     }
 }
 
@@ -157,12 +169,13 @@ function renderQuestion() {
 
 function selectOption(score) {
     answerScores[currentQ] = score;
-    saveStorage();
     setTimeout(() => {
         if (currentQ < 9) {
             currentQ++;
+            saveStorage();
             renderQuestion();
         } else {
+            localStorage.removeItem("loveTestSave");
             calcResult();
         }
     }, 300);
@@ -175,9 +188,14 @@ function calcResult() {
     const dimValues = [];
     const nurtureVals = [];
     const consumeVals = [];
-    for (let i = 0; i < 10; i++) {
+    const scoresByDimension = new Array(dimensionList.length).fill(0);
+    questionList.forEach((question, questionIndex) => {
+        scoresByDimension[question.dimIndex] = answerScores[questionIndex] ?? 0;
+    });
+
+    for (let i = 0; i < dimensionList.length; i++) {
         const dim = dimensionList[i];
-        const s = answerScores[i];
+        const s = scoresByDimension[i];
         dimValues.push(s);
         if (dim.type === "nurture") {
             sumNurture += s;

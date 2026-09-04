@@ -6,7 +6,7 @@
 
     <title>1u</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 
     <!-- Chart.js 雷达图依赖CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
@@ -43,19 +43,22 @@
     <!-- 结果页 -->
     <div id="page-result" class="page">
         <div class="card">
-            <div style="text-align:center;">
-                <div class="score-badge">总分：<span id="total-score">0</span> / 500</div>
-            </div>
+            <h2 class="result-title">你恋爱人格的优缺点分别是：</h2>
             <div class="two-card-row">
                 <div class="mini-card card-nurture">
-                    <h3>滋养型特质（红）</h3>
-                    <p id="nurture-text">温暖、包容、愿意陪伴、专一懂你，是感情里的加分项</p>
+                    <h3>优点</h3>
+                    <p class="big-text" id="good-text">全是优点</p>
                 </div>
                 <div class="mini-card card-consume">
-                    <h3>消耗型特质（蓝）</h3>
-                    <p id="consume-text">冷暴力、翻旧账、阴阳怪气，会持续消耗亲密关系</p>
+                    <h3>缺点</h3>
+                    <p class="big-text" id="bad-text">无</p>
                 </div>
             </div>
+            <p class="tip-text" id="tip-desc">优点五维整体都很突出，缺点没有明显突出的单一维度。</p>
+            <div class="score-badge">恋爱人格总分：<span id="total-score">0</span>/500</div>
+            <hr class="divider">
+            <h3 class="radar-title">十维关系雷达</h3>
+            <p class="radar-sub">左侧偏滋养能力，右侧偏消耗反应。</p>
             <div class="radar-box">
                 <canvas id="radar-chart"></canvas>
             </div>
@@ -65,6 +68,6 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
