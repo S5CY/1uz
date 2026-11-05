@@ -13,12 +13,27 @@
     <div class="room" aria-hidden="true"></div>
     <div class="night-glow" aria-hidden="true"></div>
     <div class="stars" id="stars" aria-hidden="true"></div>
-    <div class="curtain-breeze curtain-breeze--left" aria-hidden="true"></div>
-    <div class="curtain-breeze curtain-breeze--right" aria-hidden="true"></div>
 
     <nav class="utility-controls" aria-label="页面设置">
-      <button class="icon-button" id="sound-toggle" type="button" aria-label="开启声音" aria-pressed="false"><span aria-hidden="true">♪</span></button>
-      <button class="icon-button" id="motion-toggle" type="button" aria-label="减少动态效果" aria-pressed="false"><span aria-hidden="true">⚙</span></button>
+      <button class="icon-button" id="sound-toggle" type="button" aria-label="关闭全部声音" aria-pressed="false">
+        <svg class="sound-icon sound-icon--on" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9.2c1.2 1.5 1.2 4.1 0 5.6M18.8 6.5c3 3 3 8 0 11"/></svg>
+        <svg class="sound-icon sound-icon--off" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m17 9 5 5m0-5-5 5"/></svg>
+      </button>
+      <button class="icon-button" id="audio-settings-toggle" type="button" aria-label="打开声音设置" aria-expanded="false" aria-controls="audio-settings">
+        <svg class="settings-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2m4 0h10M9 4v6M7 14v6"/></svg>
+      </button>
+      <section class="audio-settings" id="audio-settings" aria-label="声音设置" hidden>
+        <div class="audio-setting-row">
+          <label for="bgm-volume">BGM</label>
+          <output id="bgm-value" for="bgm-volume">55%</output>
+          <input id="bgm-volume" type="range" min="0" max="100" value="55">
+        </div>
+        <div class="audio-setting-row">
+          <label for="sfx-volume">音效</label>
+          <output id="sfx-value" for="sfx-volume">65%</output>
+          <input id="sfx-volume" type="range" min="0" max="100" value="65">
+        </div>
+      </section>
     </nav>
 
     <header class="title-block">
