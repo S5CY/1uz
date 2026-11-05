@@ -14,6 +14,14 @@ const loginBack = document.getElementById("login-back");
 const loginForm = document.getElementById("login-form");
 const loginEmail = document.getElementById("login-email");
 const loginStatus = document.getElementById("login-status");
+const onboardingScreen = document.getElementById("onboarding-screen");
+const onboardingForm = document.getElementById("onboarding-form");
+const onboardingQuestion = document.getElementById("onboarding-question");
+const answerArea = document.getElementById("answer-area");
+const dialogueNext = document.getElementById("dialogue-next");
+const dialogueStatus = document.getElementById("dialogue-status");
+const sceneStep = document.getElementById("scene-step");
+const sceneBack = document.getElementById("scene-back");
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
 const sfx = {
@@ -29,6 +37,37 @@ const audioState = {
   bgm: Number.isFinite(savedAudio.bgm) ? savedAudio.bgm : 55,
   sfx: Number.isFinite(savedAudio.sfx) ? savedAudio.sfx : 65
 };
+const onboardingQuestions = [
+  {
+    type: "input",
+    question: "在故事开始以前，可以先告诉我——你叫什么名字吗？",
+    placeholder: "输入你的名字"
+  },
+  {
+    type: "choice",
+    question: "她平时最常怎么叫你？",
+    options: ["宝宝", "老公", "哥哥", "自己输入"],
+    customPlaceholder: "输入她对你的称呼"
+  },
+  {
+    type: "choice",
+    question: "那你平时怎么称呼她？",
+    options: ["宝宝", "老婆", "自己输入"],
+    customPlaceholder: "输入你对她的称呼"
+  },
+  {
+    type: "input",
+    question: "如果她现在就在你面前，你最想先对她说哪一句话？",
+    placeholder: "把想说的话写在这里……"
+  },
+  {
+    type: "choice",
+    question: "你希望这次故事，最后带你们去哪里？",
+    options: ["把话好好说完", "更懂彼此一点", "重新开始", "我还不知道"]
+  }
+];
+let onboardingIndex = 0;
+const onboardingAnswers = [];
 
 function saveAudioState() {
   localStorage.setItem("1u-audio", JSON.stringify(audioState));
@@ -171,7 +210,105 @@ loginForm.addEventListener("submit", (event) => {
   }
 
   playSfx("message");
-  loginStatus.textContent = `模拟成功：验证码会发送到 ${loginEmail.value}`;
+  loginStatus.textContent = `模拟成功：欢迎回来，正在载入你的故事……`;
+  window.setTimeout(() => {
+    document.body.classList.remove("login-active");
+    loginScreen.hidden = true;
+    onboardingScreen.hidden = false;
+    document.body.classList.add("onboarding-active");
+    onboardingIndex = 0;
+    renderOnboardingQuestion();
+  }, 650);
+});
+
+function renderOnboardingQuestion() {
+  const current = onboardingQuestions[onboardingIndex];
+  sceneStep.textContent = `${String(onboardingIndex + 1).padStart(2, "0")} / ${String(onboardingQuestions.length).padStart(2, "0")}`;
+  onboardingQuestion.textContent = current.question;
+  dialogueStatus.textContent = "";
+  answerArea.replaceChildren();
+
+  if (current.type === "input") {
+    const input = document.createElement("input");
+    input.className = "story-answer-input";
+    input.name = "story-answer";
+    input.type = "text";
+    input.autocomplete = "off";
+    input.placeholder = current.placeholder;
+    input.value = onboardingAnswers[onboardingIndex] || "";
+    input.required = true;
+    answerArea.appendChild(input);
+    window.setTimeout(() => input.focus(), 120);
+  } else {
+    const choices = document.createElement("div");
+    choices.className = "answer-choices";
+    const savedAnswer = onboardingAnswers[onboardingIndex] || "";
+    const standardOptions = current.options.filter((option) => option !== "自己输入");
+    const hasCustomAnswer = Boolean(savedAnswer) && !standardOptions.includes(savedAnswer);
+
+    current.options.forEach((option, index) => {
+      const label = document.createElement("label");
+      label.className = "answer-choice";
+      const isChecked = savedAnswer === option || (option === "自己输入" && hasCustomAnswer);
+      label.innerHTML = `<input type="radio" name="story-answer" value="${option}" ${isChecked ? "checked" : ""}><span>${String.fromCharCode(65 + index)}</span><b>${option}</b>`;
+      choices.appendChild(label);
+    });
+    answerArea.appendChild(choices);
+
+    if (current.options.includes("自己输入")) {
+      const customInput = document.createElement("input");
+      customInput.className = "story-answer-input custom-choice-input";
+      customInput.name = "custom-answer";
+      customInput.type = "text";
+      customInput.autocomplete = "off";
+      customInput.placeholder = current.customPlaceholder;
+      customInput.value = hasCustomAnswer ? savedAnswer : "";
+      customInput.hidden = !hasCustomAnswer;
+      answerArea.appendChild(customInput);
+
+      choices.addEventListener("change", (event) => {
+        const choosingCustom = event.target.value === "自己输入";
+        customInput.hidden = !choosingCustom;
+        if (choosingCustom) customInput.focus();
+      });
+    }
+  }
+
+  dialogueNext.querySelector("span").textContent = onboardingIndex === onboardingQuestions.length - 1 ? "确认" : "继续";
+}
+
+onboardingForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const selected = onboardingForm.elements["story-answer"];
+  let value = selected instanceof RadioNodeList ? selected.value : selected.value.trim();
+
+  if (value === "自己输入") {
+    value = onboardingForm.elements["custom-answer"].value.trim();
+  }
+
+  if (!value) {
+    playSfx("soft");
+    dialogueStatus.textContent = "先留下你的答案，再继续吧。";
+    return;
+  }
+
+  onboardingAnswers[onboardingIndex] = value;
+  playSfx("message");
+  if (onboardingIndex < onboardingQuestions.length - 1) {
+    onboardingIndex += 1;
+    renderOnboardingQuestion();
+  } else {
+    localStorage.setItem("1u-onboarding-draft", JSON.stringify(onboardingAnswers));
+    dialogueStatus.textContent = "问题预览结束——答案已暂存在这台设备。";
+  }
+});
+
+sceneBack.addEventListener("click", () => {
+  playSfx("soft");
+  document.body.classList.remove("onboarding-active");
+  onboardingScreen.hidden = true;
+  loginScreen.hidden = false;
+  document.body.classList.add("login-active");
 });
 
 continueButton.addEventListener("click", () => {

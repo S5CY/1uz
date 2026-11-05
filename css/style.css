@@ -342,6 +342,80 @@ body.login-active .story-stage,
 body.login-active .start-panel,
 body.login-active .utility-controls { filter: blur(3px); pointer-events: none; }
 
+.onboarding-screen {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  overflow: hidden;
+  color: white;
+  background:
+    linear-gradient(180deg, rgba(62, 43, 111, .14), rgba(69, 45, 116, .24)),
+    url("../assets/bedroom-night.png") center / cover no-repeat;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.onboarding-screen[hidden] { display: none; }
+.onboarding-active .onboarding-screen { opacity: 1; }
+.onboarding-topbar {
+  position: absolute;
+  z-index: 5;
+  top: var(--safe-top);
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  color: rgba(255,255,255,.8);
+  font-size: .82rem;
+}
+.scene-back { justify-self: start; padding: 8px; border: 0; color: inherit; background: transparent; }
+.scene-logo { position: relative; color: #fff0df; font: 700 1.65rem/1 Georgia, serif; filter: drop-shadow(0 0 8px rgba(255,215,230,.55)); }
+.scene-logo i { color: #f3b3d2; font-size: .5em; font-style: normal; }
+.scene-step { justify-self: end; font-variant-numeric: tabular-nums; letter-spacing: .14em; }
+.solo-character {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: clamp(245px, 32vh, 330px);
+  width: clamp(185px, 20vw, 260px);
+  aspect-ratio: 2 / 3;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  animation: soloIdle 4.3s ease-in-out infinite;
+}
+.solo-character img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.onboarding-dialogue {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: max(24px, var(--safe-bottom));
+  width: min(90vw, 660px);
+  min-height: 235px;
+  padding: 30px 38px 25px;
+  border: 2px solid rgba(255,255,255,.8);
+  border-radius: 27px;
+  background: linear-gradient(145deg, rgba(94, 65, 161, .93), rgba(65, 47, 126, .93));
+  box-shadow: 0 22px 65px rgba(42, 24, 79, .36), inset 0 0 30px rgba(255,255,255,.09);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
+}
+.speaker-name { position: absolute; top: -19px; left: 34px; margin: 0; padding: 8px 23px; border: 2px solid rgba(255,255,255,.78); border-radius: 14px; color: #4b3769; background: linear-gradient(180deg, #fff3ea, #ffdce6); font-weight: 700; }
+.onboarding-dialogue h2 { min-height: 2.8em; margin: 3px 0 17px; font: 500 clamp(1.15rem, 2.4vw, 1.48rem)/1.55 "Kaiti SC", "STKaiti", "PingFang SC", sans-serif; letter-spacing: .04em; text-align: center; }
+.answer-area { min-height: 52px; }
+.story-answer-input { width: 100%; height: 50px; padding: 0 17px; border: 1.5px solid rgba(255,255,255,.65); border-radius: 15px; outline: none; color: white; background: rgba(255,255,255,.12); font: inherit; }
+.story-answer-input:focus { border-color: #fff1b5; box-shadow: 0 0 0 3px rgba(255,239,175,.12); }
+.story-answer-input::placeholder { color: rgba(255,255,255,.48); }
+.custom-choice-input { height: 43px; margin-top: 9px; }
+.custom-choice-input[hidden] { display: none; }
+.answer-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.answer-choice { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1.5px solid rgba(255,255,255,.42); border-radius: 13px; background: rgba(255,255,255,.09); cursor: url("../assets/cursor-heart.png") 8 5, pointer; }
+.answer-choice:has(input:checked) { border-color: #ffe7a6; background: rgba(255,224,236,.2); }
+.answer-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.answer-choice span { width: 25px; aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; color: #5d4186; background: #f5d5e4; font-size: .76rem; font-weight: 800; }
+.answer-choice b { font-size: .86rem; font-weight: 500; }
+.dialogue-next { min-width: 118px; height: 42px; margin: 14px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid white; border-radius: 14px; color: var(--ink); background: linear-gradient(180deg, #fff3ea, #ffdce6); font-weight: 700; }
+.dialogue-status { min-height: 1em; margin: 7px 0 0; color: #ffe5ae; font-size: .72rem; text-align: center; }
+
 button,
 input,
 .icon-button,
@@ -352,6 +426,8 @@ input,
 .login-submit {
   cursor: url("../assets/cursor-heart.png") 8 5, pointer;
 }
+
+@keyframes soloIdle { 0%,100% { transform: translateX(-50%) translateY(0) rotate(.25deg); } 50% { transform: translateX(-50%) translateY(-5px) rotate(-.3deg); } }
 
 @keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.65) rotate(0); } 48% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
 @keyframes girlIdle { 0%,100% { transform: translate(-2px, 0) rotate(-.35deg); } 50% { transform: translate(5px, -5px) rotate(.45deg) scaleY(1.005); } }
@@ -383,6 +459,13 @@ input,
   .login-card { width: min(92vw, 390px); padding: 40px 24px 25px; border-radius: 25px; }
   .login-copy { margin-bottom: 20px; }
   .login-note { margin-top: 9px; }
+  .onboarding-topbar { left: 14px; right: 14px; }
+  .solo-character { bottom: 330px; width: clamp(160px, 48vw, 205px); }
+  .onboarding-dialogue { bottom: var(--safe-bottom); width: calc(100vw - 24px); min-height: 292px; padding: 29px 20px 18px; border-radius: 23px; }
+  .onboarding-dialogue h2 { min-height: 3.2em; margin-bottom: 13px; font-size: 1.13rem; }
+  .answer-choices { grid-template-columns: 1fr; gap: 7px; }
+  .answer-choice { min-height: 39px; }
+  .dialogue-next { margin-top: 11px; }
 }
 
 @media (max-height: 650px) {

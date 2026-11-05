@@ -95,6 +95,28 @@
         <p class="login-note"><span aria-hidden="true">♡</span> 第一次来到这里？我们会为你建立一份只属于你的存档。</p>
       </div>
     </section>
+
+    <section class="onboarding-screen" id="onboarding-screen" aria-labelledby="onboarding-question" hidden>
+      <div class="onboarding-topbar">
+        <button class="scene-back" id="scene-back" type="button">← 返回登录</button>
+        <span class="scene-logo">1u <i>♥</i></span>
+        <span class="scene-step" id="scene-step">01 / 04</span>
+      </div>
+
+      <div class="solo-character" aria-label="陈子滕">
+        <img src="assets/boy-casual.png" alt="站在卧室里的男生像素角色">
+      </div>
+
+      <div class="onboarding-dialogue">
+        <p class="speaker-name">？？？</p>
+        <form id="onboarding-form">
+          <h2 id="onboarding-question">在故事开始以前，可以先告诉我——你叫什么名字吗？</h2>
+          <div class="answer-area" id="answer-area"></div>
+          <button class="dialogue-next" id="dialogue-next" type="submit"><span>继续</span><b aria-hidden="true">→</b></button>
+          <p class="dialogue-status" id="dialogue-status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
   </main>
   <script src="js/script.js"></script>
 </body>
