@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#8f73c4">
   <meta name="description" content="有些话，还没有说完。">
   <title>1u · 有些话，还没有说完</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261105-1515">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -78,21 +78,21 @@
           <span class="login-orbit"></span>
           <strong>1u</strong><i>♥</i>
         </div>
-        <p class="login-kicker">SAVE OUR STORY</p>
-        <h2 id="login-title">继续我们的故事</h2>
-        <p class="login-copy">给这段故事取一个只有你记得的 ID。<br>以后输入同一个 ID，就能继续回来。</p>
+        <p class="login-kicker">STORY ARCHIVE</p>
+        <h2 id="login-title">找到你的故事</h2>
+        <p class="login-copy">第一次输入会建立一份新存档。<br>以后用同一个 ID，就能继续回来。</p>
 
         <form class="login-form" id="login-form" novalidate>
-          <label for="story-id">故事 ID</label>
+          <label for="story-id"><span>存档 ID</span><small>2–24 个字符</small></label>
           <div class="story-id-field">
-            <span aria-hidden="true">♡</span>
-            <input id="story-id" name="story-id" type="text" autocomplete="off" placeholder="输入你的故事 ID" minlength="2" maxlength="24" required>
+            <span aria-hidden="true">#</span>
+            <input id="story-id" name="story-id" type="text" autocomplete="off" placeholder="取一个你记得住的 ID" minlength="2" maxlength="24" required>
           </div>
           <button class="login-submit" type="submit"><span>进入故事</span><b aria-hidden="true">→</b></button>
           <p class="login-status" id="login-status" aria-live="polite"></p>
         </form>
 
-        <p class="login-note"><span aria-hidden="true">♡</span> 第一次输入会建立存档；请记住这个 ID。</p>
+        <p class="login-note"><span aria-hidden="true">♡</span> 不需要密码，但要记住这串 ID。</p>
       </div>
     </section>
 
@@ -118,6 +118,6 @@
       </div>
     </section>
   </main>
-  <script src="js/script.js"></script>
+  <script src="js/script.js?v=20261105-1515"></script>
 </body>
 </html>

@@ -216,7 +216,12 @@ loginForm.addEventListener("submit", (event) => {
   }
 
   localStorage.setItem("1u-current-story-id", storyId);
-  const savedAnswers = JSON.parse(localStorage.getItem(getStoryStorageKey(storyId)) || "[]");
+  let savedAnswers = [];
+  try {
+    savedAnswers = JSON.parse(localStorage.getItem(getStoryStorageKey(storyId)) || "[]");
+  } catch {
+    localStorage.removeItem(getStoryStorageKey(storyId));
+  }
   onboardingAnswers.splice(0, onboardingAnswers.length, ...savedAnswers);
   playSfx("message");
   loginStatus.textContent = `正在载入「${storyId}」的故事……`;
@@ -318,6 +323,7 @@ sceneBack.addEventListener("click", () => {
   document.body.classList.remove("onboarding-active");
   onboardingScreen.hidden = true;
   loginScreen.hidden = false;
+  loginStatus.textContent = "";
   document.body.classList.add("login-active");
 });
 
