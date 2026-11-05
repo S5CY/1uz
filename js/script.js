@@ -52,7 +52,7 @@ const onboardingQuestions = [
   {
     type: "choice",
     question: "那你平时怎么称呼她？",
-    options: ["宝宝", "老婆", "自己输入"],
+    options: ["宝宝", "老婆", "姐姐", "自己输入"],
     customPlaceholder: "输入你对她的称呼"
   },
   {
