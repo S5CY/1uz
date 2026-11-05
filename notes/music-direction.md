@@ -2,7 +2,7 @@
 
 ## 已决定
 
-- 首页 / 默认 BGM：`Evening Glow`
+- 首页 / 默认 BGM：`Evening Glow - piano version` — ChenYueLong
 - 吵架片段开头：使用目前候选曲 #2 的前奏（最终曲名再确认）
 - 吵架后的缓和部分：`nop` — ChenYueLong
 - 情绪分析部分：`The Gray City`

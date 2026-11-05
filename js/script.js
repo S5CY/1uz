@@ -11,6 +11,14 @@ const continueButton = document.getElementById("continue-button");
 const statusMessage = document.getElementById("status-message");
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
+const sfx = {
+  soft: new Audio("assets/audio/sfx/ui-soft.wav"),
+  start: new Audio("assets/audio/sfx/ui-start.wav"),
+  hover: new Audio("assets/audio/sfx/ui-hover.wav"),
+  toggle: new Audio("assets/audio/sfx/ui-toggle.wav"),
+  message: new Audio("assets/audio/sfx/ui-message.mp3"),
+  confirm: new Audio("assets/audio/sfx/ui-confirm.wav")
+};
 const audioState = {
   muted: Boolean(savedAudio.muted),
   bgm: Number.isFinite(savedAudio.bgm) ? savedAudio.bgm : 55,
@@ -30,22 +38,14 @@ function updateAudioControls() {
   sfxValue.value = `${audioState.sfx}%`;
 }
 
-function playUiClick() {
+function playSfx(name = "soft") {
   if (audioState.muted || audioState.sfx === 0) return;
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) return;
-  const context = playUiClick.context || new AudioContextClass();
-  playUiClick.context = context;
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(620, context.currentTime);
-  oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + .055);
-  gain.gain.setValueAtTime(.045 * audioState.sfx / 100, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + .07);
-  oscillator.connect(gain).connect(context.destination);
-  oscillator.start();
-  oscillator.stop(context.currentTime + .075);
+  const sound = sfx[name];
+  if (!sound) return;
+  sound.pause();
+  sound.currentTime = 0;
+  sound.volume = audioState.sfx / 100;
+  sound.play().catch(() => {});
 }
 
 function createStars() {
@@ -98,7 +98,7 @@ soundToggle.addEventListener("click", () => {
   audioState.muted = !audioState.muted;
   saveAudioState();
   updateAudioControls();
-  if (!audioState.muted) playUiClick();
+  if (!audioState.muted) playSfx("toggle");
   setStatus(audioState.muted ? "全部声音已关闭" : "声音已恢复");
 });
 
@@ -107,7 +107,7 @@ audioSettingsToggle.addEventListener("click", () => {
   audioSettings.hidden = !opening;
   audioSettingsToggle.setAttribute("aria-expanded", String(opening));
   audioSettingsToggle.setAttribute("aria-label", opening ? "关闭声音设置" : "打开声音设置");
-  playUiClick();
+  playSfx("toggle");
 });
 
 function updateVolume(kind, input, output) {
@@ -118,7 +118,7 @@ function updateVolume(kind, input, output) {
 
 bgmVolume.addEventListener("input", () => updateVolume("bgm", bgmVolume, bgmValue));
 sfxVolume.addEventListener("input", () => updateVolume("sfx", sfxVolume, sfxValue));
-sfxVolume.addEventListener("change", playUiClick);
+sfxVolume.addEventListener("change", () => playSfx("confirm"));
 
 document.addEventListener("click", (event) => {
   if (!audioSettings.hidden && !event.target.closest(".utility-controls")) {
@@ -129,7 +129,7 @@ document.addEventListener("click", (event) => {
 });
 
 startButton.addEventListener("click", () => {
-  playUiClick();
+  playSfx("start");
   startButton.animate(
     [
       { transform: "scale(1)" },
@@ -143,8 +143,14 @@ startButton.addEventListener("click", () => {
 });
 
 continueButton.addEventListener("click", () => {
-  playUiClick();
+  playSfx("soft");
   setStatus("还没有保存的故事。");
+});
+
+[startButton, continueButton, soundToggle, audioSettingsToggle].forEach((button) => {
+  button.addEventListener("pointerenter", (event) => {
+    if (event.pointerType !== "touch") playSfx("hover");
+  });
 });
 
 let resizeTimer;
