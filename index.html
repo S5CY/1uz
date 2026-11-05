@@ -80,19 +80,19 @@
         </div>
         <p class="login-kicker">SAVE OUR STORY</p>
         <h2 id="login-title">继续我们的故事</h2>
-        <p class="login-copy">输入邮箱，让你的故事进度<br>跟着你去每一台设备。</p>
+        <p class="login-copy">给这段故事取一个只有你记得的 ID。<br>以后输入同一个 ID，就能继续回来。</p>
 
         <form class="login-form" id="login-form" novalidate>
-          <label for="login-email">邮箱</label>
-          <div class="email-field">
-            <span aria-hidden="true">✉</span>
-            <input id="login-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required>
+          <label for="story-id">故事 ID</label>
+          <div class="story-id-field">
+            <span aria-hidden="true">♡</span>
+            <input id="story-id" name="story-id" type="text" autocomplete="off" placeholder="输入你的故事 ID" minlength="2" maxlength="24" required>
           </div>
-          <button class="login-submit" type="submit"><span>发送登录验证码</span><b aria-hidden="true">→</b></button>
+          <button class="login-submit" type="submit"><span>进入故事</span><b aria-hidden="true">→</b></button>
           <p class="login-status" id="login-status" aria-live="polite"></p>
         </form>
 
-        <p class="login-note"><span aria-hidden="true">♡</span> 第一次来到这里？我们会为你建立一份只属于你的存档。</p>
+        <p class="login-note"><span aria-hidden="true">♡</span> 第一次输入会建立存档；请记住这个 ID。</p>
       </div>
     </section>
 

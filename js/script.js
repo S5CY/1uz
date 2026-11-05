@@ -12,7 +12,7 @@ const statusMessage = document.getElementById("status-message");
 const loginScreen = document.getElementById("login-screen");
 const loginBack = document.getElementById("login-back");
 const loginForm = document.getElementById("login-form");
-const loginEmail = document.getElementById("login-email");
+const storyIdInput = document.getElementById("story-id");
 const loginStatus = document.getElementById("login-status");
 const onboardingScreen = document.getElementById("onboarding-screen");
 const onboardingForm = document.getElementById("onboarding-form");
@@ -68,6 +68,10 @@ const onboardingQuestions = [
 ];
 let onboardingIndex = 0;
 const onboardingAnswers = [];
+
+function getStoryStorageKey(storyId) {
+  return `1u-story-${encodeURIComponent(storyId)}-onboarding`;
+}
 
 function saveAudioState() {
   localStorage.setItem("1u-audio", JSON.stringify(audioState));
@@ -186,7 +190,7 @@ startButton.addEventListener("click", () => {
   window.setTimeout(() => {
     loginScreen.hidden = false;
     document.body.classList.add("login-active");
-    window.setTimeout(() => loginEmail.focus(), 380);
+    window.setTimeout(() => storyIdInput.focus(), 380);
   }, 220);
 });
 
@@ -202,15 +206,20 @@ loginBack.addEventListener("click", () => {
 
 loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (!loginEmail.validity.valid) {
+  const storyId = storyIdInput.value.trim();
+
+  if (storyId.length < 2) {
     playSfx("soft");
-    loginStatus.textContent = "先输入一个有效的邮箱呀";
-    loginEmail.focus();
+    loginStatus.textContent = "故事 ID 至少需要两个字符呀";
+    storyIdInput.focus();
     return;
   }
 
+  localStorage.setItem("1u-current-story-id", storyId);
+  const savedAnswers = JSON.parse(localStorage.getItem(getStoryStorageKey(storyId)) || "[]");
+  onboardingAnswers.splice(0, onboardingAnswers.length, ...savedAnswers);
   playSfx("message");
-  loginStatus.textContent = `模拟成功：欢迎回来，正在载入你的故事……`;
+  loginStatus.textContent = `正在载入「${storyId}」的故事……`;
   window.setTimeout(() => {
     document.body.classList.remove("login-active");
     loginScreen.hidden = true;
@@ -298,7 +307,8 @@ onboardingForm.addEventListener("submit", (event) => {
     onboardingIndex += 1;
     renderOnboardingQuestion();
   } else {
-    localStorage.setItem("1u-onboarding-draft", JSON.stringify(onboardingAnswers));
+    const storyId = localStorage.getItem("1u-current-story-id");
+    localStorage.setItem(getStoryStorageKey(storyId), JSON.stringify(onboardingAnswers));
     dialogueStatus.textContent = "问题预览结束——答案已暂存在这台设备。";
   }
 });

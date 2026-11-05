@@ -326,11 +326,11 @@ body {
 .login-copy { margin: 11px 0 24px; color: rgba(255,255,255,.77); font-size: .91rem; line-height: 1.7; }
 .login-form { text-align: left; }
 .login-form label { display: block; margin: 0 0 7px 4px; color: rgba(255,255,255,.86); font-size: .82rem; }
-.email-field { height: 52px; display: flex; align-items: center; gap: 11px; padding: 0 16px; border: 1.5px solid rgba(255,255,255,.66); border-radius: 16px; background: rgba(255,255,255,.13); box-shadow: inset 0 0 14px rgba(255,255,255,.05); }
-.email-field:focus-within { border-color: #fff2b8; box-shadow: 0 0 0 3px rgba(255, 239, 175, .14); }
-.email-field > span { color: #f5c8df; }
-.email-field input { width: 100%; border: 0; outline: 0; color: white; background: transparent; font: inherit; }
-.email-field input::placeholder { color: rgba(255,255,255,.47); }
+.story-id-field { height: 52px; display: flex; align-items: center; gap: 11px; padding: 0 16px; border: 1.5px solid rgba(255,255,255,.66); border-radius: 16px; background: rgba(255,255,255,.13); box-shadow: inset 0 0 14px rgba(255,255,255,.05); }
+.story-id-field:focus-within { border-color: #fff2b8; box-shadow: 0 0 0 3px rgba(255, 239, 175, .14); }
+.story-id-field > span { color: #f5c8df; }
+.story-id-field input { width: 100%; border: 0; outline: 0; color: white; background: transparent; font: inherit; }
+.story-id-field input::placeholder { color: rgba(255,255,255,.47); }
 .login-submit { width: 100%; min-height: 52px; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 14px; border: 2px solid #fff7f1; border-radius: 17px; color: var(--ink); background: linear-gradient(180deg, #fff3ea, #ffdce6); box-shadow: 0 7px 18px rgba(45, 28, 83, .24); font-weight: 700; letter-spacing: .08em; cursor: pointer; transition: transform .18s ease, filter .18s ease; }
 .login-submit:hover { transform: translateY(-2px); filter: brightness(1.04); }
 .login-submit b { font-size: 1.2rem; }
