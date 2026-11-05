@@ -1,42 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1u</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            font-family: system-ui, sans-serif;
-            color: #222;
-            background: #f7f7f7;
-        }
-        main {
-            width: min(90%, 640px);
-            padding: 3rem;
-            text-align: center;
-            background: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
-        }
-        h1 {
-            margin: 0 0 0.75rem;
-            font-size: clamp(2rem, 8vw, 4rem);
-        }
-        p {
-            margin: 0;
-            color: #666;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#8f73c4">
+  <meta name="description" content="有些话，还没有说完。">
+  <title>1u · 有些话，还没有说完</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <main>
-        <h1>1u</h1>
-        <p>Welcome to my website.</p>
-    </main>
+  <main class="game-shell" aria-labelledby="game-title">
+    <div class="room" aria-hidden="true"></div>
+    <div class="night-glow" aria-hidden="true"></div>
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <div class="curtain-breeze curtain-breeze--left" aria-hidden="true"></div>
+    <div class="curtain-breeze curtain-breeze--right" aria-hidden="true"></div>
+
+    <nav class="utility-controls" aria-label="页面设置">
+      <button class="icon-button" id="sound-toggle" type="button" aria-label="开启声音" aria-pressed="false"><span aria-hidden="true">♪</span></button>
+      <button class="icon-button" id="motion-toggle" type="button" aria-label="减少动态效果" aria-pressed="false"><span aria-hidden="true">⚙</span></button>
+    </nav>
+
+    <header class="title-block">
+      <h1 class="logo" id="game-title">
+        <span class="logo-orbit" aria-hidden="true"></span>
+        <span>1u</span>
+        <span class="logo-heart" aria-hidden="true">♥</span>
+      </h1>
+      <p>有些话，还没有说完。</p>
+    </header>
+
+    <section class="story-stage" aria-label="陈沐言和陈子滕">
+      <div class="character character--girl" aria-label="陈沐言">
+        <img src="assets/girl-casual.png" alt="陈沐言的像素角色">
+        <span class="blink-mask blink-mask--girl blink-mask--left" aria-hidden="true"></span>
+        <span class="blink-mask blink-mask--girl blink-mask--right" aria-hidden="true"></span>
+      </div>
+
+      <div class="message-window" aria-hidden="true">
+        <div class="window-dots"><i></i><i></i><i></i></div>
+        <div class="bubble bubble--left"><span></span><span></span><span></span></div>
+        <div class="bubble bubble--right"><span></span><span></span><span></span></div>
+        <div class="message-input"><span class="cursor-line"></span><span class="send-arrow">➤</span></div>
+        <span class="pixel-heart">♥</span>
+      </div>
+
+      <div class="character character--boy" aria-label="陈子滕">
+        <img src="assets/boy-casual.png" alt="陈子滕的像素角色">
+        <span class="blink-mask blink-mask--boy blink-mask--left" aria-hidden="true"></span>
+        <span class="blink-mask blink-mask--boy blink-mask--right" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <section class="start-panel" aria-label="游戏菜单">
+      <button class="start-button" id="start-button" type="button">
+        <span aria-hidden="true">♥</span><strong>开始</strong><span aria-hidden="true">♥</span>
+      </button>
+      <button class="continue-button" id="continue-button" type="button">继续</button>
+      <p class="status-message" id="status-message" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="js/script.js"></script>
 </body>
 </html>
