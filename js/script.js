@@ -4,6 +4,7 @@ const motionToggle = document.getElementById("motion-toggle");
 const startButton = document.getElementById("start-button");
 const continueButton = document.getElementById("continue-button");
 const statusMessage = document.getElementById("status-message");
+const characterSprites = [...document.querySelectorAll(".character-sprite")];
 
 function createStars() {
   const count = window.innerWidth < 700 ? 14 : 22;
@@ -27,6 +28,22 @@ function setStatus(message) {
   setStatus.timeout = window.setTimeout(() => {
     statusMessage.textContent = "";
   }, 2600);
+}
+
+function scheduleBlink(sprite, initialDelay = 0) {
+  const blink = () => {
+    if (!document.body.classList.contains("reduce-motion")) {
+      sprite.src = sprite.dataset.closed;
+      window.setTimeout(() => {
+        sprite.src = sprite.dataset.open;
+      }, 150);
+    }
+
+    const nextBlink = 2600 + Math.random() * 4200;
+    sprite.blinkTimer = window.setTimeout(blink, nextBlink);
+  };
+
+  sprite.blinkTimer = window.setTimeout(blink, initialDelay + 1200 + Math.random() * 1800);
 }
 
 soundToggle.addEventListener("click", () => {
@@ -69,3 +86,4 @@ window.addEventListener("resize", () => {
 });
 
 createStars();
+characterSprites.forEach((sprite, index) => scheduleBlink(sprite, index * 900));

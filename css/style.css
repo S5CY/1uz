@@ -67,19 +67,33 @@ body {
 
 .curtain-breeze {
   position: absolute;
-  z-index: -2;
+  z-index: 1;
   top: 0;
-  width: clamp(44px, 8vw, 130px);
-  height: 66%;
-  opacity: .2;
-  filter: blur(7px);
-  background: linear-gradient(90deg, transparent, rgba(246, 207, 255, .62), transparent);
+  width: clamp(76px, 9vw, 165px);
+  height: 67%;
+  opacity: .42;
+  filter: blur(1px);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 14%, rgba(255,229,255,.2) 17%, rgba(164,116,218,.08) 26%),
+    linear-gradient(90deg, rgba(209,164,246,.2), rgba(250,214,255,.58), rgba(177,127,222,.18));
+  clip-path: polygon(4% 0, 96% 0, 82% 52%, 100% 100%, 15% 100%, 28% 54%);
   transform-origin: top center;
-  animation: curtainSway 7s ease-in-out infinite alternate;
+  animation: curtainSway 5.8s ease-in-out infinite alternate;
   pointer-events: none;
 }
-.curtain-breeze--left { left: 18%; }
-.curtain-breeze--right { right: 18%; animation-delay: -3.5s; }
+.curtain-breeze::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 53%;
+  height: 8%;
+  border-radius: 999px;
+  background: rgba(229, 190, 253, .72);
+  box-shadow: 0 2px 7px rgba(91, 58, 139, .28);
+}
+.curtain-breeze--left { left: 14.3%; }
+.curtain-breeze--right { right: 14.3%; animation-name: curtainSwayRight; animation-delay: -2.9s; transform: scaleX(-1); }
 
 .utility-controls {
   position: absolute;
@@ -167,7 +181,7 @@ body {
 .character {
   position: absolute;
   z-index: 4;
-  bottom: 0;
+  bottom: -88px;
   width: clamp(155px, 17vw, 235px);
   aspect-ratio: 2 / 3;
   transform-origin: 50% 100%;
@@ -176,23 +190,6 @@ body {
 .character img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .character--girl { left: 2%; animation: girlIdle 4.2s ease-in-out infinite; }
 .character--boy { right: 3%; animation: boyIdle 4.6s ease-in-out -.8s infinite; }
-
-.blink-mask {
-  position: absolute;
-  width: 3.4%;
-  height: 2.1%;
-  border-bottom: 2px solid #2a1d2f;
-  border-radius: 50%;
-  background: #ffe8dc;
-  opacity: 0;
-  animation: blink 6.7s steps(1, end) infinite;
-}
-.blink-mask--girl { top: 38.4%; }
-.blink-mask--girl.blink-mask--left { left: 57.5%; }
-.blink-mask--girl.blink-mask--right { left: 69.7%; }
-.blink-mask--boy { top: 40.2%; animation-delay: -2.4s; }
-.blink-mask--boy.blink-mask--left { left: 35.2%; }
-.blink-mask--boy.blink-mask--right { left: 47.5%; }
 
 .message-window {
   position: absolute;
@@ -272,10 +269,10 @@ body {
 .status-message { min-height: 1.2em; margin: 5px 0 0; font-size: .82rem; color: rgba(255,255,255,.88); }
 
 @keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.65) rotate(0); } 48% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
-@keyframes curtainSway { from { transform: skewX(-1.5deg) translateX(-5px); } to { transform: skewX(2deg) translateX(8px); } }
+@keyframes curtainSway { from { margin-left: -5px; transform: rotate(-1.4deg) skewX(-1deg); } to { margin-left: 8px; transform: rotate(1.8deg) skewX(1.5deg); } }
+@keyframes curtainSwayRight { from { margin-right: -5px; transform: scaleX(-1) rotate(-1.4deg) skewX(-1deg); } to { margin-right: 8px; transform: scaleX(-1) rotate(1.8deg) skewX(1.5deg); } }
 @keyframes girlIdle { 0%,100% { transform: translate(-2px, 0) rotate(-.35deg); } 50% { transform: translate(5px, -5px) rotate(.45deg) scaleY(1.005); } }
 @keyframes boyIdle { 0%,100% { transform: translate(3px, 0) rotate(.35deg); } 50% { transform: translate(-5px, -4px) rotate(-.4deg) scaleY(1.004); } }
-@keyframes blink { 0%, 66%, 69%, 100% { opacity: 0; } 67%, 68% { opacity: 1; } }
 @keyframes cursorBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes tinyHeart { 0%,100% { transform: scale(.92) rotate(-4deg); } 45% { transform: scale(1.08) rotate(3deg); } }
 @keyframes startPulse { 0%,100% { transform: scale(1); } 18% { transform: scale(1.025); } 35% { transform: scale(1); } 52% { transform: scale(1.014); } }
@@ -292,20 +289,23 @@ body {
   .title-block p { font-size: clamp(1rem, 5vw, 1.35rem); letter-spacing: .1em; }
   .story-stage { top: clamp(155px, 23vh, 205px); width: 100vw; height: 45vh; min-height: 300px; }
   .character { width: clamp(135px, 39vw, 185px); }
+  .character { bottom: -38px; }
   .character--girl { left: 3%; }
   .character--boy { right: 2%; }
   .message-window { top: 11%; width: min(62vw, 280px); opacity: .88; }
   .start-panel { bottom: var(--safe-bottom); width: min(86vw, 340px); }
   .start-button { min-height: 64px; border-radius: 22px; padding-inline: 26px; }
   .continue-button { margin-top: 8px; }
-  .curtain-breeze--left { left: 6%; }
-  .curtain-breeze--right { right: 6%; }
+  .curtain-breeze { width: 19vw; height: 61%; opacity: .34; }
+  .curtain-breeze--left { left: 3%; }
+  .curtain-breeze--right { right: 3%; }
 }
 
 @media (max-height: 680px) and (min-width: 701px) {
   .title-block { top: 40px; }
   .story-stage { top: 125px; height: 48vh; }
   .character { width: min(15vw, 185px); }
+  .character { bottom: -64px; }
   .start-button { min-height: 58px; }
   .start-panel { width: 310px; }
 }
