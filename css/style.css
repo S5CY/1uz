@@ -17,6 +17,7 @@ body {
   overflow: hidden;
   background: #6d58aa;
   font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  cursor: url("../assets/cursor-heart.png") 8 5, auto;
 }
 
 .game-shell {
@@ -275,6 +276,83 @@ body {
 }
 .status-message { min-height: 1.2em; margin: 5px 0 0; font-size: .82rem; color: rgba(255,255,255,.88); }
 
+.login-screen {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--safe-top) + 28px) 20px calc(var(--safe-bottom) + 28px);
+  background: linear-gradient(180deg, rgba(56, 36, 103, .32), rgba(63, 39, 111, .56));
+  backdrop-filter: blur(10px) saturate(.9);
+  opacity: 0;
+  transition: opacity .32s ease;
+}
+.login-screen[hidden] { display: none; }
+.login-active .login-screen { opacity: 1; }
+.login-card {
+  position: relative;
+  width: min(90vw, 440px);
+  padding: 42px 44px 34px;
+  border: 2px solid rgba(255, 248, 255, .78);
+  border-radius: 30px;
+  color: var(--soft-white);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 221, 241, .22), transparent 35%),
+    linear-gradient(145deg, rgba(116, 82, 177, .88), rgba(74, 54, 139, .9));
+  box-shadow: 0 24px 70px rgba(42, 25, 79, .4), inset 0 0 34px rgba(255,255,255,.1);
+  transform: translateY(18px) scale(.97);
+  transition: transform .38s cubic-bezier(.2, .8, .2, 1);
+}
+.login-active .login-card { transform: translateY(0) scale(1); }
+.login-back {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  padding: 6px 9px;
+  border: 0;
+  color: rgba(255,255,255,.84);
+  background: transparent;
+  font-size: .85rem;
+  cursor: pointer;
+}
+.login-mark { position: relative; display: inline-grid; place-items: center; width: 72px; height: 44px; margin-bottom: 5px; }
+.login-mark strong { z-index: 1; color: #fff0df; font: 700 2rem/1 Georgia, serif; letter-spacing: -.08em; }
+.login-mark i { position: absolute; right: 3px; bottom: 6px; color: #f7bfd7; font-size: .65rem; font-style: normal; }
+.login-orbit { position: absolute; inset: 6px 0 4px; border: 1.5px solid rgba(255, 231, 235, .86); border-left-color: transparent; border-radius: 50%; transform: rotate(-9deg); }
+.login-kicker { margin: 4px 0 8px; color: #f3c9df; font: 600 .67rem/1.2 Georgia, serif; letter-spacing: .26em; }
+.login-card h2 { margin: 0; font: 500 clamp(1.65rem, 5vw, 2.05rem)/1.3 "Kaiti SC", "STKaiti", "PingFang SC", sans-serif; letter-spacing: .08em; }
+.login-copy { margin: 11px 0 24px; color: rgba(255,255,255,.77); font-size: .91rem; line-height: 1.7; }
+.login-form { text-align: left; }
+.login-form label { display: block; margin: 0 0 7px 4px; color: rgba(255,255,255,.86); font-size: .82rem; }
+.email-field { height: 52px; display: flex; align-items: center; gap: 11px; padding: 0 16px; border: 1.5px solid rgba(255,255,255,.66); border-radius: 16px; background: rgba(255,255,255,.13); box-shadow: inset 0 0 14px rgba(255,255,255,.05); }
+.email-field:focus-within { border-color: #fff2b8; box-shadow: 0 0 0 3px rgba(255, 239, 175, .14); }
+.email-field > span { color: #f5c8df; }
+.email-field input { width: 100%; border: 0; outline: 0; color: white; background: transparent; font: inherit; }
+.email-field input::placeholder { color: rgba(255,255,255,.47); }
+.login-submit { width: 100%; min-height: 52px; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 14px; border: 2px solid #fff7f1; border-radius: 17px; color: var(--ink); background: linear-gradient(180deg, #fff3ea, #ffdce6); box-shadow: 0 7px 18px rgba(45, 28, 83, .24); font-weight: 700; letter-spacing: .08em; cursor: pointer; transition: transform .18s ease, filter .18s ease; }
+.login-submit:hover { transform: translateY(-2px); filter: brightness(1.04); }
+.login-submit b { font-size: 1.2rem; }
+.login-status { min-height: 1.3em; margin: 9px 2px 0; color: #ffe5ae; font-size: .76rem; line-height: 1.4; text-align: center; }
+.login-note { margin: 13px 0 0; color: rgba(255,255,255,.61); font-size: .72rem; line-height: 1.6; }
+.login-note span { color: #f4bad5; }
+body.login-active .title-block,
+body.login-active .story-stage,
+body.login-active .start-panel,
+body.login-active .utility-controls { filter: blur(3px); pointer-events: none; }
+
+button,
+input,
+.icon-button,
+.audio-setting-row input,
+.start-button,
+.continue-button,
+.login-back,
+.login-submit {
+  cursor: url("../assets/cursor-heart.png") 8 5, pointer;
+}
+
 @keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.65) rotate(0); } 48% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
 @keyframes girlIdle { 0%,100% { transform: translate(-2px, 0) rotate(-.35deg); } 50% { transform: translate(5px, -5px) rotate(.45deg) scaleY(1.005); } }
 @keyframes boyIdle { 0%,100% { transform: translate(3px, 0) rotate(.35deg); } 50% { transform: translate(-5px, -4px) rotate(-.4deg) scaleY(1.004); } }
@@ -301,6 +379,17 @@ body {
   .start-panel { bottom: var(--safe-bottom); width: min(86vw, 340px); }
   .start-button { min-height: 64px; border-radius: 22px; padding-inline: 26px; }
   .continue-button { margin-top: 8px; }
+  .login-screen { padding-inline: 16px; }
+  .login-card { width: min(92vw, 390px); padding: 40px 24px 25px; border-radius: 25px; }
+  .login-copy { margin-bottom: 20px; }
+  .login-note { margin-top: 9px; }
+}
+
+@media (max-height: 650px) {
+  .login-screen { align-items: center; padding-block: 12px; }
+  .login-card { padding-top: 32px; padding-bottom: 20px; transform: scale(.9); }
+  .login-active .login-card { transform: scale(.94); }
+  .login-copy { margin-block: 6px 12px; }
 }
 
 @media (max-height: 680px) and (min-width: 701px) {

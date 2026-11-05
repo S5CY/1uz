@@ -70,6 +70,31 @@
       <button class="continue-button" id="continue-button" type="button">继续</button>
       <p class="status-message" id="status-message" aria-live="polite"></p>
     </section>
+
+    <section class="login-screen" id="login-screen" aria-labelledby="login-title" hidden>
+      <div class="login-card">
+        <button class="login-back" id="login-back" type="button" aria-label="返回首页">← 返回</button>
+        <div class="login-mark" aria-hidden="true">
+          <span class="login-orbit"></span>
+          <strong>1u</strong><i>♥</i>
+        </div>
+        <p class="login-kicker">SAVE OUR STORY</p>
+        <h2 id="login-title">继续我们的故事</h2>
+        <p class="login-copy">输入邮箱，让你的故事进度<br>跟着你去每一台设备。</p>
+
+        <form class="login-form" id="login-form" novalidate>
+          <label for="login-email">邮箱</label>
+          <div class="email-field">
+            <span aria-hidden="true">✉</span>
+            <input id="login-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required>
+          </div>
+          <button class="login-submit" type="submit"><span>发送登录验证码</span><b aria-hidden="true">→</b></button>
+          <p class="login-status" id="login-status" aria-live="polite"></p>
+        </form>
+
+        <p class="login-note"><span aria-hidden="true">♡</span> 第一次来到这里？我们会为你建立一份只属于你的存档。</p>
+      </div>
+    </section>
   </main>
   <script src="js/script.js"></script>
 </body>

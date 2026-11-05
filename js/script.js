@@ -9,6 +9,11 @@ const sfxValue = document.getElementById("sfx-value");
 const startButton = document.getElementById("start-button");
 const continueButton = document.getElementById("continue-button");
 const statusMessage = document.getElementById("status-message");
+const loginScreen = document.getElementById("login-screen");
+const loginBack = document.getElementById("login-back");
+const loginForm = document.getElementById("login-form");
+const loginEmail = document.getElementById("login-email");
+const loginStatus = document.getElementById("login-status");
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
 const sfx = {
@@ -139,7 +144,34 @@ startButton.addEventListener("click", () => {
     ],
     { duration: 420, easing: "ease-out" }
   );
-  setStatus("故事，从这一句话开始。");
+  window.setTimeout(() => {
+    loginScreen.hidden = false;
+    document.body.classList.add("login-active");
+    window.setTimeout(() => loginEmail.focus(), 380);
+  }, 220);
+});
+
+loginBack.addEventListener("click", () => {
+  playSfx("soft");
+  document.body.classList.remove("login-active");
+  loginStatus.textContent = "";
+  window.setTimeout(() => {
+    loginScreen.hidden = true;
+    startButton.focus();
+  }, 320);
+});
+
+loginForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!loginEmail.validity.valid) {
+    playSfx("soft");
+    loginStatus.textContent = "先输入一个有效的邮箱呀";
+    loginEmail.focus();
+    return;
+  }
+
+  playSfx("message");
+  loginStatus.textContent = `模拟成功：验证码会发送到 ${loginEmail.value}`;
 });
 
 continueButton.addEventListener("click", () => {
@@ -147,7 +179,7 @@ continueButton.addEventListener("click", () => {
   setStatus("还没有保存的故事。");
 });
 
-[startButton, continueButton, soundToggle, audioSettingsToggle].forEach((button) => {
+[startButton, continueButton, soundToggle, audioSettingsToggle, loginBack].forEach((button) => {
   button.addEventListener("pointerenter", (event) => {
     if (event.pointerType !== "touch") playSfx("hover");
   });
