@@ -30,20 +30,26 @@ function setStatus(message) {
   }, 2600);
 }
 
+const BLINK_INTERVAL = 3000;
+const BLINK_DURATION = 170;
+
 function scheduleBlink(sprite, initialDelay = 0) {
+  const blinkImage = new Image();
+  blinkImage.src = sprite.dataset.closed;
+
   const blink = () => {
     if (!document.body.classList.contains("reduce-motion")) {
       sprite.src = sprite.dataset.closed;
       window.setTimeout(() => {
         sprite.src = sprite.dataset.open;
-      }, 150);
+      }, BLINK_DURATION);
     }
-
-    const nextBlink = 2600 + Math.random() * 4200;
-    sprite.blinkTimer = window.setTimeout(blink, nextBlink);
   };
 
-  sprite.blinkTimer = window.setTimeout(blink, initialDelay + 1200 + Math.random() * 1800);
+  sprite.blinkTimer = window.setTimeout(() => {
+    blink();
+    sprite.blinkTimer = window.setInterval(blink, BLINK_INTERVAL);
+  }, BLINK_INTERVAL + initialDelay);
 }
 
 soundToggle.addEventListener("click", () => {
@@ -86,4 +92,4 @@ window.addEventListener("resize", () => {
 });
 
 createStars();
-characterSprites.forEach((sprite, index) => scheduleBlink(sprite, index * 900));
+characterSprites.forEach((sprite, index) => scheduleBlink(sprite, index * 420));
