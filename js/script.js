@@ -26,6 +26,7 @@ const bedroomGame = document.getElementById("bedroom-game");
 const roomPlayer = document.getElementById("room-player");
 const roomPlayerSprite = document.getElementById("room-player-sprite");
 const gameStoryId = document.getElementById("game-story-id");
+const gameSaveButton = document.getElementById("game-save-button");
 const gameExit = document.getElementById("game-exit");
 const roomGirl = document.getElementById("room-girl");
 const npcDialogue = document.getElementById("npc-dialogue");
@@ -33,6 +34,15 @@ const npcDialogueText = npcDialogue.querySelector("p");
 const npcDialogueClose = document.getElementById("npc-dialogue-close");
 const affectionButton = document.getElementById("affection-button");
 const affectionPopup = document.getElementById("affection-popup");
+const sceneName = document.getElementById("scene-name");
+const bedroomDoor = document.getElementById("bedroom-door");
+const crossroadHome = document.getElementById("crossroad-home");
+const replayDirection = document.getElementById("replay-direction");
+const shopDoor = document.getElementById("shop-door");
+const shelfHotspot = document.getElementById("shelf-hotspot");
+const sceneToast = document.getElementById("scene-toast");
+const memoryShelfModal = document.getElementById("memory-shelf-modal");
+const memoryShelfClose = document.getElementById("memory-shelf-close");
 const touchControls = [...document.querySelectorAll("[data-direction]")];
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
@@ -87,6 +97,19 @@ function getStoryStorageKey(storyId) {
 
 function getRoomStorageKey(storyId) {
   return `1u-story-${encodeURIComponent(storyId)}-room-position`;
+}
+
+function getGameStateStorageKey(storyId) {
+  return `1u-story-${encodeURIComponent(storyId)}-game-state`;
+}
+
+function loadGameState(storyId) {
+  try {
+    return JSON.parse(localStorage.getItem(getGameStateStorageKey(storyId)) || "null");
+  } catch {
+    localStorage.removeItem(getGameStateStorageKey(storyId));
+    return null;
+  }
 }
 
 function saveAudioState() {
@@ -258,11 +281,16 @@ loginForm.addEventListener("submit", (event) => {
     localStorage.removeItem(getStoryStorageKey(storyId));
   }
   onboardingAnswers.splice(0, onboardingAnswers.length, ...savedAnswers);
+  const savedGameState = loadGameState(storyId);
   playSfx("message");
   loginStatus.textContent = `正在载入「${storyId}」的故事……`;
   window.setTimeout(() => {
     document.body.classList.remove("login-active");
     loginScreen.hidden = true;
+    if (savedAnswers.length >= onboardingQuestions.length) {
+      enterBedroomGame(savedGameState);
+      return;
+    }
     onboardingScreen.hidden = false;
     document.body.classList.add("onboarding-active");
     onboardingIndex = 0;
@@ -350,7 +378,7 @@ onboardingForm.addEventListener("submit", (event) => {
     const storyId = localStorage.getItem("1u-current-story-id");
     localStorage.setItem(getStoryStorageKey(storyId), JSON.stringify(onboardingAnswers));
     dialogueStatus.textContent = "存档完成，正在进入卧室……";
-    window.setTimeout(enterBedroomGame, 650);
+    window.setTimeout(() => enterBedroomGame(), 650);
   }
 });
 
@@ -380,15 +408,72 @@ function renderPlayerPosition() {
   roomPlayer.style.left = `${playerPosition.x}%`;
   roomPlayer.style.top = `${playerPosition.y}%`;
   updateGirlProximity();
+  updateSceneProximity();
 }
 
 function updateGirlProximity() {
+  if (bedroomGame.dataset.scene !== "bedroom") {
+    roomGirl.classList.remove("is-near");
+    return false;
+  }
   const girlX = window.innerWidth <= 700 ? 27 : 23;
   const girlY = window.innerWidth <= 700 ? 53 : 68;
   const closeEnough = Math.abs(playerPosition.x - girlX) <= 15 && Math.abs(playerPosition.y - girlY) <= 11;
   roomGirl.classList.toggle("is-near", closeEnough);
   roomGirl.setAttribute("aria-label", closeEnough ? "和她说话" : "走近一点再和她说话");
   return closeEnough;
+}
+
+const sceneLabels = {
+  bedroom: "卧室",
+  crossroads: "门外 · 三岔路",
+  "shop-exterior": "场景重演 · 店外",
+  "shop-interior": "场景重演 · 店内"
+};
+
+function showSceneToast(message) {
+  sceneToast.textContent = message;
+  sceneToast.classList.add("is-visible");
+  window.clearTimeout(showSceneToast.timer);
+  showSceneToast.timer = window.setTimeout(() => sceneToast.classList.remove("is-visible"), 1800);
+}
+
+function setScene(scene, position = { x: 50, y: 72 }, facing = "front") {
+  bedroomGame.dataset.scene = scene;
+  bedroomGame.setAttribute("aria-label", sceneLabels[scene] || "可以探索的场景");
+  sceneName.textContent = sceneLabels[scene] || "";
+  playerPosition.x = position.x;
+  playerPosition.y = position.y;
+  setPlayerFacing(facing);
+  npcDialogue.hidden = true;
+  affectionPopup.hidden = true;
+  memoryShelfModal.hidden = true;
+  renderPlayerPosition();
+  saveGameState(false);
+  playSfx("soft");
+}
+
+function updateSceneProximity() {
+  const scene = bedroomGame.dataset.scene || "bedroom";
+  const nearBedroomDoor = scene === "bedroom" && playerPosition.x >= 72 && playerPosition.y >= 53;
+  const nearHome = scene === "crossroads" && playerPosition.x <= 27 && playerPosition.y >= 48;
+  const nearShopDoor = scene === "shop-exterior" && playerPosition.y <= 37 && playerPosition.x >= 35 && playerPosition.x <= 65;
+  const nearShelf = scene === "shop-interior" && playerPosition.x >= 67 && playerPosition.y <= 57;
+
+  bedroomDoor.classList.toggle("is-near", nearBedroomDoor);
+  crossroadHome.classList.toggle("is-near", nearHome);
+  shopDoor.classList.toggle("is-near", nearShopDoor);
+  shelfHotspot.classList.toggle("is-near", nearShelf);
+  replayDirection.classList.toggle("is-visible", scene === "crossroads" && playerPosition.x >= 58);
+}
+
+function getSceneBounds() {
+  switch (bedroomGame.dataset.scene) {
+    case "crossroads": return { minX: 8, maxX: 92, minY: 26, maxY: 84 };
+    case "shop-exterior": return { minX: 14, maxX: 86, minY: 24, maxY: 84 };
+    case "shop-interior": return { minX: 12, maxX: 88, minY: 28, maxY: 84 };
+    default: return { minX: 12, maxX: 88, minY: 55, maxY: 77 };
+  }
 }
 
 function clearGirlAnimation() {
@@ -422,14 +507,34 @@ function setPlayerFacing(direction) {
   roomPlayerSprite.classList.toggle("is-mirrored", direction === "right");
 }
 
-function savePlayerPosition() {
+function saveGameState(showFeedback = false) {
   const storyId = localStorage.getItem("1u-current-story-id");
   if (!storyId) return;
-  localStorage.setItem(getRoomStorageKey(storyId), JSON.stringify(playerPosition));
+  const state = {
+    scene: bedroomGame.dataset.scene || "bedroom",
+    position: { x: playerPosition.x, y: playerPosition.y },
+    facing: roomPlayer.dataset.facing || "front",
+    affection: 10,
+    audio: { ...audioState },
+    savedAt: Date.now()
+  };
+  localStorage.setItem(getGameStateStorageKey(storyId), JSON.stringify(state));
+  if (state.scene === "bedroom") localStorage.setItem(getRoomStorageKey(storyId), JSON.stringify(state.position));
+  if (showFeedback) {
+    showSceneToast("已保存 ♡");
+    playSfx("confirm");
+  }
 }
+
+function savePlayerPosition() { saveGameState(false); }
 
 function movementLoop(timestamp) {
   if (!document.body.classList.contains("bedroom-game-active")) return;
+  if (!memoryShelfModal.hidden) {
+    movementKeys.clear();
+    movementFrame = window.requestAnimationFrame(movementLoop);
+    return;
+  }
   const elapsed = Math.min((timestamp - lastMovementTime) / 16.67 || 1, 2);
   lastMovementTime = timestamp;
   let horizontal = 0;
@@ -442,11 +547,20 @@ function movementLoop(timestamp) {
 
   if (horizontal || vertical) {
     const diagonal = horizontal && vertical ? Math.SQRT1_2 : 1;
-    playerPosition.x = Math.max(12, Math.min(88, playerPosition.x + horizontal * .34 * elapsed * diagonal));
-    playerPosition.y = Math.max(55, Math.min(77, playerPosition.y + vertical * .34 * elapsed * diagonal));
+    const bounds = getSceneBounds();
+    playerPosition.x = Math.max(bounds.minX, Math.min(bounds.maxX, playerPosition.x + horizontal * .34 * elapsed * diagonal));
+    playerPosition.y = Math.max(bounds.minY, Math.min(bounds.maxY, playerPosition.y + vertical * .34 * elapsed * diagonal));
     setPlayerFacing(Math.abs(horizontal) > Math.abs(vertical) ? (horizontal < 0 ? "left" : "right") : (vertical < 0 ? "back" : "front"));
     roomPlayer.classList.add("is-walking");
     renderPlayerPosition();
+
+    if (bedroomGame.dataset.scene === "crossroads" && playerPosition.x >= 91) {
+      setScene("shop-exterior", { x: 50, y: 78 }, "back");
+    } else if (bedroomGame.dataset.scene === "shop-exterior" && playerPosition.y <= 25 && playerPosition.x >= 35 && playerPosition.x <= 65) {
+      setScene("shop-interior", { x: 25, y: 76 }, "back");
+    } else if (bedroomGame.dataset.scene === "shop-interior" && playerPosition.y >= 83 && playerPosition.x <= 35) {
+      setScene("shop-exterior", { x: 50, y: 36 }, "front");
+    }
   } else {
     roomPlayer.classList.remove("is-walking");
   }
@@ -454,35 +568,80 @@ function movementLoop(timestamp) {
   movementFrame = window.requestAnimationFrame(movementLoop);
 }
 
-function enterBedroomGame() {
+function enterBedroomGame(savedState = null) {
   const storyId = localStorage.getItem("1u-current-story-id") || "未命名";
-  let savedPosition;
+  const validScenes = new Set(Object.keys(sceneLabels));
+  let savedPosition = savedState?.position;
+  const savedScene = validScenes.has(savedState?.scene) ? savedState.scene : "bedroom";
   try {
-    savedPosition = JSON.parse(localStorage.getItem(getRoomStorageKey(storyId)) || "null");
+    if (!savedPosition) savedPosition = JSON.parse(localStorage.getItem(getRoomStorageKey(storyId)) || "null");
   } catch {
     savedPosition = null;
   }
-  if (savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y)) {
-    playerPosition.x = Math.max(12, Math.min(88, savedPosition.x));
-    playerPosition.y = Math.max(55, Math.min(77, savedPosition.y));
+  if (savedState?.audio) {
+    if (typeof savedState.audio.muted === "boolean") audioState.muted = savedState.audio.muted;
+    if (Number.isFinite(savedState.audio.bgm)) audioState.bgm = savedState.audio.bgm;
+    if (Number.isFinite(savedState.audio.sfx)) audioState.sfx = savedState.audio.sfx;
+    saveAudioState();
+    updateAudioControls();
   }
   gameStoryId.textContent = storyId;
   onboardingScreen.hidden = true;
   document.body.classList.remove("onboarding-active");
   bedroomGame.hidden = false;
+  bedroomGame.dataset.scene = savedScene;
+  sceneName.textContent = sceneLabels[savedScene];
   document.body.classList.add("bedroom-game-active");
-  roomPlayer.dataset.facing = "front";
-  roomPlayerSprite.src = "assets/boy-casual.png";
-  roomPlayerSprite.classList.remove("is-mirrored");
+  const facing = savedState?.facing || "front";
+  roomPlayer.dataset.facing = facing;
+  roomPlayerSprite.src = playerSprites[facing] || "assets/boy-casual.png";
+  roomPlayerSprite.classList.toggle("is-mirrored", facing === "right");
   roomGirl.dataset.frame = "0";
   npcDialogue.hidden = true;
   affectionPopup.hidden = true;
   affectionButton.setAttribute("aria-expanded", "false");
+  const bounds = getSceneBounds();
+  playerPosition.x = Number.isFinite(savedPosition?.x) ? Math.max(bounds.minX, Math.min(bounds.maxX, savedPosition.x)) : 50;
+  playerPosition.y = Number.isFinite(savedPosition?.y) ? Math.max(bounds.minY, Math.min(bounds.maxY, savedPosition.y)) : (savedScene === "bedroom" ? 66 : 78);
   renderPlayerPosition();
   window.cancelAnimationFrame(movementFrame);
   lastMovementTime = performance.now();
   movementFrame = window.requestAnimationFrame(movementLoop);
 }
+
+bedroomDoor.addEventListener("click", () => {
+  if (!bedroomDoor.classList.contains("is-near")) return showSceneToast("走到门边再出门吧。");
+  setScene("crossroads", { x: 50, y: 78 }, "back");
+});
+
+crossroadHome.addEventListener("click", () => {
+  if (!crossroadHome.classList.contains("is-near")) return;
+  setScene("bedroom", { x: 78, y: 66 }, "left");
+});
+
+shopDoor.addEventListener("click", () => {
+  if (!shopDoor.classList.contains("is-near")) return;
+  setScene("shop-interior", { x: 25, y: 76 }, "back");
+});
+
+shelfHotspot.addEventListener("click", () => {
+  if (!shelfHotspot.classList.contains("is-near")) return;
+  memoryShelfModal.hidden = false;
+  movementKeys.clear();
+  playSfx("message");
+});
+
+memoryShelfClose.addEventListener("click", () => {
+  memoryShelfModal.hidden = true;
+  playSfx("soft");
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !memoryShelfModal.hidden) {
+    memoryShelfModal.hidden = true;
+    playSfx("soft");
+  }
+});
 
 roomGirl.addEventListener("click", () => {
   if (!updateGirlProximity()) {
@@ -520,7 +679,7 @@ function setMovement(direction, active) {
 
 window.addEventListener("keydown", (event) => {
   const direction = directionKeys[event.key.toLowerCase()];
-  if (!direction || !document.body.classList.contains("bedroom-game-active")) return;
+  if (!direction || !document.body.classList.contains("bedroom-game-active") || !memoryShelfModal.hidden) return;
   event.preventDefault();
   setMovement(direction, true);
 });
@@ -549,16 +708,31 @@ touchControls.forEach((button) => {
 });
 
 gameExit.addEventListener("click", () => {
-  savePlayerPosition();
+  saveGameState(false);
   movementKeys.clear();
   window.cancelAnimationFrame(movementFrame);
   document.body.classList.remove("bedroom-game-active");
   bedroomGame.hidden = true;
   npcDialogue.hidden = true;
   clearGirlAnimation();
-  onboardingScreen.hidden = false;
-  document.body.classList.add("onboarding-active");
+  loginScreen.hidden = false;
+  loginStatus.textContent = "";
+  storyIdInput.value = localStorage.getItem("1u-current-story-id") || "";
+  document.body.classList.add("login-active");
   playSfx("soft");
+});
+
+gameSaveButton.addEventListener("click", () => saveGameState(true));
+
+window.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s" && document.body.classList.contains("bedroom-game-active")) {
+    event.preventDefault();
+    saveGameState(true);
+  }
+});
+
+window.addEventListener("beforeunload", () => {
+  if (document.body.classList.contains("bedroom-game-active")) saveGameState(false);
 });
 
 sceneBack.addEventListener("click", () => {

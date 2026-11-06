@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#8f73c4">
   <meta name="description" content="有些话，还没有说完。">
   <title>1u · 有些话，还没有说完</title>
-  <link rel="stylesheet" href="css/style.css?v=20261105-2045">
+  <link rel="stylesheet" href="css/style.css?v=20261105-2245">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -118,12 +118,17 @@
       </div>
     </section>
 
-    <section class="bedroom-game" id="bedroom-game" aria-label="可以探索的卧室" hidden>
+    <section class="bedroom-game" id="bedroom-game" data-scene="bedroom" aria-label="可以探索的卧室" hidden>
       <div class="game-hud">
-        <button class="game-exit" id="game-exit" type="button">← 返回问题</button>
-        <div class="game-save-chip"><span>存档</span><strong id="game-story-id">—</strong></div>
+        <button class="game-exit" id="game-exit" type="button">← 返回登录</button>
+        <div class="game-save-cluster">
+          <div class="game-save-chip"><span>存档</span><strong id="game-story-id">—</strong></div>
+          <button class="game-save-button" id="game-save-button" type="button">保存</button>
+        </div>
         <p class="movement-hint"><kbd>WASD</kbd> 或方向键移动</p>
       </div>
+
+      <p class="scene-name" id="scene-name">卧室</p>
 
       <button class="room-girl" id="room-girl" type="button" aria-label="和她说话">
         <span class="room-girl-sprite" id="room-girl-sprite" aria-hidden="true"></span>
@@ -133,6 +138,15 @@
       <div class="room-player" id="room-player" data-facing="front">
         <img id="room-player-sprite" src="assets/boy-casual.png" alt="可以在卧室里走动的男生角色">
       </div>
+
+      <button class="scene-hotspot bedroom-door" id="bedroom-door" type="button">出门 →</button>
+      <button class="scene-hotspot crossroad-home" id="crossroad-home" type="button">← 回家</button>
+      <div class="replay-direction" id="replay-direction" aria-hidden="true">场景重演 <span>→</span></div>
+      <div class="replay-shop-title" aria-hidden="true">场景重演</div>
+      <button class="scene-hotspot shop-door" id="shop-door" type="button">进入店里 ↑</button>
+      <button class="scene-hotspot shelf-hotspot" id="shelf-hotspot" type="button">查看货架 ♡</button>
+
+      <p class="scene-toast" id="scene-toast" aria-live="polite"></p>
 
       <section class="npc-dialogue" id="npc-dialogue" aria-live="polite" hidden>
         <span class="npc-speaker">她</span>
@@ -158,8 +172,18 @@
         <button type="button" data-direction="down" aria-label="向下走">▼</button>
         <button type="button" data-direction="right" aria-label="向右走">▶</button>
       </div>
+
+      <section class="memory-shelf-modal" id="memory-shelf-modal" aria-label="记忆货架" hidden>
+        <div class="memory-shelf-card">
+          <button class="memory-shelf-close" id="memory-shelf-close" type="button" aria-label="关闭货架">×</button>
+          <div class="memory-ball" role="button" tabindex="0" aria-label="11.1 记忆球">
+            <span>11.1</span>
+          </div>
+          <p>目前只有这一颗。</p>
+        </div>
+      </section>
     </section>
   </main>
-  <script src="js/script.js?v=20261105-2045"></script>
+  <script src="js/script.js?v=20261105-2315"></script>
 </body>
 </html>
