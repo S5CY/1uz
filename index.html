@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#8f73c4">
   <meta name="description" content="有些话，还没有说完。">
   <title>1u · 有些话，还没有说完</title>
-  <link rel="stylesheet" href="css/style.css?v=20261105-1600">
+  <link rel="stylesheet" href="css/style.css?v=20261105-1900">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -125,8 +125,31 @@
         <p class="movement-hint"><kbd>WASD</kbd> 或方向键移动</p>
       </div>
 
+      <button class="room-girl" id="room-girl" type="button" aria-label="和她说话">
+        <span class="room-girl-sprite" id="room-girl-sprite" aria-hidden="true"></span>
+        <span class="interaction-heart" aria-hidden="true">♡</span>
+      </button>
+
       <div class="room-player" id="room-player" data-facing="front">
         <img id="room-player-sprite" src="assets/boy-casual.png" alt="可以在卧室里走动的男生角色">
+      </div>
+
+      <section class="npc-dialogue" id="npc-dialogue" aria-live="polite" hidden>
+        <span class="npc-speaker">她</span>
+        <p>不想理你...</p>
+        <button id="npc-dialogue-close" type="button" aria-label="关闭对话">×</button>
+      </section>
+
+      <div class="affection-control">
+        <button class="affection-button" id="affection-button" type="button" aria-label="查看好感度" aria-expanded="false" aria-controls="affection-popup">
+          <span aria-hidden="true">♥</span>
+          <strong>10%</strong>
+        </button>
+        <section class="affection-popup" id="affection-popup" aria-label="好感度" hidden>
+          <div><span>好感度</span><strong>10%</strong></div>
+          <div class="affection-track" aria-hidden="true"><i></i></div>
+          <p>她现在还不太想理你。</p>
+        </section>
       </div>
 
       <div class="touch-controls" aria-label="移动方向键">
@@ -137,6 +160,6 @@
       </div>
     </section>
   </main>
-  <script src="js/script.js?v=20261105-1600"></script>
+  <script src="js/script.js?v=20261105-1900"></script>
 </body>
 </html>

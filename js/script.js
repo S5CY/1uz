@@ -27,6 +27,12 @@ const roomPlayer = document.getElementById("room-player");
 const roomPlayerSprite = document.getElementById("room-player-sprite");
 const gameStoryId = document.getElementById("game-story-id");
 const gameExit = document.getElementById("game-exit");
+const roomGirl = document.getElementById("room-girl");
+const npcDialogue = document.getElementById("npc-dialogue");
+const npcDialogueText = npcDialogue.querySelector("p");
+const npcDialogueClose = document.getElementById("npc-dialogue-close");
+const affectionButton = document.getElementById("affection-button");
+const affectionPopup = document.getElementById("affection-popup");
 const touchControls = [...document.querySelectorAll("[data-direction]")];
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
@@ -349,10 +355,45 @@ const playerSprites = {
 const playerPosition = { x: 50, y: 64 };
 let movementFrame;
 let lastMovementTime = 0;
+let girlAnimationTimers = [];
 
 function renderPlayerPosition() {
   roomPlayer.style.left = `${playerPosition.x}%`;
   roomPlayer.style.top = `${playerPosition.y}%`;
+  updateGirlProximity();
+}
+
+function updateGirlProximity() {
+  const girlX = window.innerWidth <= 700 ? 27 : 23;
+  const girlY = window.innerWidth <= 700 ? 58 : 68;
+  const closeEnough = Math.abs(playerPosition.x - girlX) <= 15 && Math.abs(playerPosition.y - girlY) <= 11;
+  roomGirl.classList.toggle("is-near", closeEnough);
+  roomGirl.setAttribute("aria-label", closeEnough ? "和她说话" : "走近一点再和她说话");
+  return closeEnough;
+}
+
+function clearGirlAnimation() {
+  girlAnimationTimers.forEach((timer) => window.clearTimeout(timer));
+  girlAnimationTimers = [];
+}
+
+function playGirlHmph() {
+  clearGirlAnimation();
+  [
+    [0, 0],
+    [1, 170],
+    [2, 340],
+    [3, 540]
+  ].forEach(([frame, delay]) => {
+    girlAnimationTimers.push(window.setTimeout(() => {
+      roomGirl.dataset.frame = String(frame);
+    }, delay));
+  });
+  girlAnimationTimers.push(window.setTimeout(() => {
+    npcDialogueText.textContent = "不想理你...";
+    npcDialogue.hidden = false;
+    playSfx("message");
+  }, 420));
 }
 
 function setPlayerFacing(direction) {
@@ -414,11 +455,44 @@ function enterBedroomGame() {
   roomPlayer.dataset.facing = "front";
   roomPlayerSprite.src = "assets/boy-casual.png";
   roomPlayerSprite.classList.remove("is-mirrored");
+  roomGirl.dataset.frame = "0";
+  npcDialogue.hidden = true;
+  affectionPopup.hidden = true;
+  affectionButton.setAttribute("aria-expanded", "false");
   renderPlayerPosition();
   window.cancelAnimationFrame(movementFrame);
   lastMovementTime = performance.now();
   movementFrame = window.requestAnimationFrame(movementLoop);
 }
+
+roomGirl.addEventListener("click", () => {
+  if (!updateGirlProximity()) {
+    npcDialogueText.textContent = "再靠近一点...";
+    npcDialogue.hidden = false;
+    playSfx("soft");
+    return;
+  }
+  playGirlHmph();
+});
+
+npcDialogueClose.addEventListener("click", () => {
+  npcDialogue.hidden = true;
+  playSfx("soft");
+});
+
+affectionButton.addEventListener("click", () => {
+  const opening = affectionPopup.hidden;
+  affectionPopup.hidden = !opening;
+  affectionButton.setAttribute("aria-expanded", String(opening));
+  playSfx("toggle");
+});
+
+document.addEventListener("click", (event) => {
+  if (!affectionPopup.hidden && !event.target.closest(".affection-control")) {
+    affectionPopup.hidden = true;
+    affectionButton.setAttribute("aria-expanded", "false");
+  }
+});
 
 function setMovement(direction, active) {
   if (active) movementKeys.add(direction);
@@ -461,6 +535,8 @@ gameExit.addEventListener("click", () => {
   window.cancelAnimationFrame(movementFrame);
   document.body.classList.remove("bedroom-game-active");
   bedroomGame.hidden = true;
+  npcDialogue.hidden = true;
+  clearGirlAnimation();
   onboardingScreen.hidden = false;
   document.body.classList.add("onboarding-active");
   playSfx("soft");

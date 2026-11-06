@@ -424,10 +424,11 @@ body.login-active .utility-controls { filter: blur(3px); pointer-events: none; }
   overflow: hidden;
   color: white;
   background:
-    linear-gradient(180deg, rgba(58, 40, 105, .08), rgba(69, 45, 116, .14)),
-    url("../assets/bedroom-night.png") center / cover no-repeat;
+    linear-gradient(180deg, rgba(58, 40, 105, .03), rgba(69, 45, 116, .08)),
+    url("../assets/bedroom-game-desktop.png") center / cover no-repeat;
 }
 .bedroom-game[hidden] { display: none; }
+body.bedroom-game-active .utility-controls { z-index: 70; }
 .game-hud { position: absolute; z-index: 8; top: var(--safe-top); left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
 .game-exit { justify-self: start; padding: 9px 11px; border: 1px solid rgba(255,255,255,.5); border-radius: 12px; color: white; background: rgba(72,48,128,.34); backdrop-filter: blur(8px); }
 .game-save-chip { justify-self: center; display: flex; align-items: center; gap: 9px; padding: 8px 15px; border: 1px solid rgba(255,255,255,.45); border-radius: 999px; background: rgba(72,48,128,.36); backdrop-filter: blur(8px); font-size: .76rem; }
@@ -435,11 +436,36 @@ body.login-active .utility-controls { filter: blur(3px); pointer-events: none; }
 .game-save-chip strong { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .movement-hint { justify-self: end; margin: 0; padding: 9px 12px; border-radius: 12px; color: rgba(255,255,255,.8); background: rgba(72,48,128,.28); font-size: .72rem; backdrop-filter: blur(8px); }
 .movement-hint kbd { padding: 2px 5px; border: 1px solid rgba(255,255,255,.5); border-radius: 5px; color: white; background: rgba(255,255,255,.12); font: inherit; }
-.room-player { position: absolute; z-index: 4; width: clamp(105px, 12vw, 158px); aspect-ratio: 2 / 3; transform: translate(-50%, -50%); transform-origin: 50% 100%; will-change: left, top, transform; }
+.room-player { position: absolute; z-index: 4; width: clamp(82px, 7vw, 112px); aspect-ratio: 2 / 3; transform: translate(-50%, -50%); transform-origin: 50% 100%; will-change: left, top, transform; }
 .room-player::after { content: ""; position: absolute; z-index: -1; left: 21%; right: 21%; bottom: 4%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
 .room-player img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .room-player img.is-mirrored { transform: scaleX(-1); }
 .room-player.is-walking { animation: playerWalk .34s steps(2, end) infinite; }
+.room-girl { position: absolute; z-index: 5; left: 23%; top: 68%; width: clamp(94px, 7.4vw, 122px); aspect-ratio: 3 / 4; padding: 0; border: 0; outline: 0; color: #f49ac3; background: transparent; transform: translate(-50%, -50%); cursor: url("../assets/cursor-heart.png") 8 5, pointer; }
+.room-girl::after { content: ""; position: absolute; z-index: -1; left: 18%; right: 18%; bottom: 2%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
+.room-girl-sprite { position: absolute; inset: 0; display: block; background-image: url("../assets/girl-bed-interaction-strip.png"); background-repeat: no-repeat; background-size: 400% 100%; background-position: 0 0; transition: filter .2s ease; }
+.room-girl[data-frame="1"] .room-girl-sprite { background-position: 33.333% 0; }
+.room-girl[data-frame="2"] .room-girl-sprite { background-position: 66.666% 0; }
+.room-girl[data-frame="3"] .room-girl-sprite { background-position: 100% 0; }
+.room-girl.is-near .room-girl-sprite { filter: drop-shadow(0 0 10px rgba(255,190,225,.54)); }
+.interaction-heart { position: absolute; top: -12%; right: -2%; font-size: clamp(1.5rem, 2.3vw, 2.15rem); color: #f49ac3; text-shadow: 0 0 9px rgba(255,190,225,.9), 1px 1px white; animation: tinyHeart 1.5s ease-in-out infinite; }
+.room-girl:not(.is-near) .interaction-heart { opacity: .5; transform: scale(.8); }
+.npc-dialogue { position: absolute; z-index: 12; left: 50%; bottom: max(34px, calc(var(--safe-bottom) + 8px)); width: min(70vw, 520px); min-height: 112px; padding: 33px 54px 22px; border: 2px solid rgba(255,255,255,.84); border-radius: 24px; color: #4b3769; background: linear-gradient(180deg, rgba(255,246,250,.96), rgba(255,220,234,.95)); box-shadow: 0 18px 45px rgba(45,28,83,.3), inset 0 0 22px rgba(255,255,255,.55); transform: translateX(-50%); }
+.npc-dialogue[hidden] { display: none; }
+.npc-dialogue p { margin: 7px 0 0; font: 600 clamp(1.15rem, 2.3vw, 1.55rem)/1.5 "Kaiti SC", "STKaiti", sans-serif; letter-spacing: .08em; }
+.npc-speaker { position: absolute; top: -18px; left: 28px; padding: 7px 22px; border: 2px solid white; border-radius: 13px; color: white; background: #a17ac8; font-weight: 700; }
+.npc-dialogue button { position: absolute; top: 12px; right: 14px; width: 34px; aspect-ratio: 1; border: 0; border-radius: 50%; color: #765494; background: rgba(255,255,255,.5); font-size: 1.25rem; }
+.affection-control { position: absolute; z-index: 15; left: max(20px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom)); }
+.affection-button { min-width: 96px; height: 52px; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 0 17px; border: 2px solid rgba(255,255,255,.82); border-radius: 18px; color: white; background: linear-gradient(145deg, rgba(238,132,181,.88), rgba(197,101,160,.88)); box-shadow: 0 10px 25px rgba(78,44,98,.28), inset 0 0 15px rgba(255,255,255,.15); backdrop-filter: blur(9px); }
+.affection-button span { color: #ffd7e9; font-size: 1.35rem; filter: drop-shadow(0 0 5px rgba(255,220,235,.7)); }
+.affection-button strong { font-variant-numeric: tabular-nums; }
+.affection-popup { position: absolute; left: 0; bottom: calc(100% + 10px); width: min(76vw, 250px); padding: 17px; border: 2px solid rgba(255,255,255,.82); border-radius: 19px; color: #5b3e73; background: rgba(255,239,247,.96); box-shadow: 0 18px 40px rgba(50,29,78,.28); }
+.affection-popup[hidden] { display: none; }
+.affection-popup > div:first-child { display: flex; justify-content: space-between; align-items: center; }
+.affection-popup strong { color: #d65f9c; }
+.affection-track { height: 9px; margin: 11px 0 9px; overflow: hidden; border-radius: 99px; background: #ead7e5; }
+.affection-track i { display: block; width: 10%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f29ac3, #e06aa7); box-shadow: 0 0 8px rgba(224,106,167,.55); }
+.affection-popup p { margin: 0; color: #846b94; font-size: .78rem; }
 .touch-controls { position: absolute; z-index: 8; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); width: 150px; height: 112px; display: none; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 6px; }
 .touch-controls button { border: 1.5px solid rgba(255,255,255,.68); border-radius: 14px; color: white; background: rgba(85,58,146,.58); box-shadow: inset 0 0 14px rgba(255,255,255,.08); backdrop-filter: blur(8px); touch-action: none; user-select: none; }
 .touch-controls [data-direction="up"] { grid-column: 2; grid-row: 1; }
@@ -501,7 +527,12 @@ input,
   .game-hud { left: 10px; right: 10px; grid-template-columns: 1fr auto; }
   .game-save-chip { justify-self: end; }
   .movement-hint { display: none; }
-  .room-player { width: clamp(92px, 28vw, 125px); }
+  .bedroom-game { background-image: linear-gradient(180deg, rgba(58,40,105,.02), rgba(69,45,116,.06)), url("../assets/bedroom-game-mobile.png"); background-position: center; background-size: cover; }
+  .room-player { width: clamp(70px, 20vw, 92px); }
+  .room-girl { left: 27%; top: 58%; width: clamp(76px, 22vw, 98px); }
+  .npc-dialogue { bottom: max(112px, calc(var(--safe-bottom) + 90px)); width: calc(100vw - 28px); min-height: 98px; padding: 29px 45px 18px 27px; }
+  .affection-control { left: max(12px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); }
+  .affection-button { min-width: 82px; height: 46px; padding-inline: 13px; border-radius: 15px; }
   .touch-controls { display: grid; }
 }
 
