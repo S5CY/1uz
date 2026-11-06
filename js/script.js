@@ -39,6 +39,7 @@ const sceneName = document.getElementById("scene-name");
 const bedroomDoor = document.getElementById("bedroom-door");
 const crossroadHome = document.getElementById("crossroad-home");
 const replayDirection = document.getElementById("replay-direction");
+const questionDirection = document.getElementById("question-direction");
 const shopDoor = document.getElementById("shop-door");
 const shelfHotspot = document.getElementById("shelf-hotspot");
 const sceneToast = document.getElementById("scene-toast");
@@ -61,6 +62,11 @@ const replayContinue = document.getElementById("replay-continue");
 const affectionGain = document.getElementById("affection-gain");
 const achievementBanner = document.getElementById("achievement-banner");
 const achievementClose = document.getElementById("achievement-close");
+const questionPlacePanel = document.getElementById("question-place-panel");
+const questionPlaceAnswer = document.getElementById("question-place-answer");
+const questionPlaceSave = document.getElementById("question-place-save");
+const questionPlaceBack = document.getElementById("question-place-back");
+const questionPlaceStatus = document.getElementById("question-place-status");
 const affectionValue = document.getElementById("affection-value");
 const affectionPopupValue = document.getElementById("affection-popup-value");
 const touchControls = [...document.querySelectorAll("[data-direction]")];
@@ -113,10 +119,12 @@ const onboardingAnswers = [];
 let affectionLevel = 10;
 let memory111Complete = false;
 let memoryRewardFlags = new Set();
+let answerLog = [];
 let replayHearts = 3;
 let replayCheckpoint = "start";
 let replayStep = "start";
 let replayDialogueAction = null;
+let pendingAffectionHint = false;
 
 function getStoryStorageKey(storyId) {
   return `1u-story-${encodeURIComponent(storyId)}-onboarding`;
@@ -430,7 +438,7 @@ const playerPosition = { x: 50, y: 64 };
 let movementFrame;
 let lastMovementTime = 0;
 let lastWalkFrameTime = 0;
-let walkFrame = 0;
+let walkFrame = 1;
 let lastAutoSaveTime = 0;
 let girlAnimationTimers = [];
 
@@ -481,6 +489,7 @@ function setScene(scene, position = { x: 50, y: 72 }, facing = "front") {
   replayDialogue.hidden = true;
   affectionPopup.hidden = true;
   memoryShelfModal.hidden = true;
+  questionPlacePanel.hidden = true;
   renderPlayerPosition();
   saveGameState(false);
   playSfx("soft");
@@ -498,6 +507,7 @@ function updateSceneProximity() {
   shopDoor.classList.toggle("is-near", nearShopDoor);
   shelfHotspot.classList.toggle("is-near", nearShelf);
   replayDirection.classList.toggle("is-visible", scene === "crossroads" && playerPosition.x >= 58);
+  questionDirection.classList.toggle("is-visible", scene === "crossroads" && playerPosition.y <= 45 && playerPosition.x >= 35 && playerPosition.x <= 65);
 }
 
 function getSceneBounds() {
@@ -568,6 +578,11 @@ function updateReplayLives() {
   [...replayLives.children].forEach((heart, index) => heart.classList.toggle("is-lost", index >= replayHearts));
 }
 
+function recordAnswer(prompt, answer, scene = bedroomGame.dataset.scene || "unknown") {
+  answerLog.push({ scene, prompt, answer, recordedAt: new Date().toISOString() });
+  saveGameState(false);
+}
+
 function showReplayDialogue({ speaker = "她", text, choices = [], onContinue = null }) {
   replaySpeaker.textContent = speaker;
   replayDialogueText.textContent = text;
@@ -578,7 +593,10 @@ function showReplayDialogue({ speaker = "她", text, choices = [], onContinue = 
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = `${String.fromCharCode(65 + index)}. ${choice.label}`;
-    button.addEventListener("click", choice.action, { once: true });
+    button.addEventListener("click", () => {
+      recordAnswer(text, choice.label);
+      choice.action();
+    }, { once: true });
     replayChoices.appendChild(button);
   });
   replayDialogue.hidden = false;
@@ -827,6 +845,7 @@ function saveGameState(showFeedback = false) {
     affection: affectionLevel,
     memory111Complete,
     memoryRewardFlags: [...memoryRewardFlags],
+    answerLog,
     replayHearts,
     audio: { ...audioState },
     savedAt: Date.now()
@@ -844,7 +863,7 @@ function savePlayerPosition() { saveGameState(false); }
 
 function movementLoop(timestamp) {
   if (!document.body.classList.contains("bedroom-game-active")) return;
-  if (!memoryShelfModal.hidden || !replayDialogue.hidden || !replayGuide.hidden || !achievementBanner.hidden) {
+  if (!memoryShelfModal.hidden || !questionPlacePanel.hidden || !replayDialogue.hidden || !replayGuide.hidden || !achievementBanner.hidden) {
     movementKeys.clear();
     movementFrame = window.requestAnimationFrame(movementLoop);
     return;
@@ -860,7 +879,7 @@ function movementLoop(timestamp) {
   if (movementKeys.has("down")) vertical += 1;
 
   if (horizontal || vertical) {
-    if (timestamp - lastWalkFrameTime >= 125) {
+    if (timestamp - lastWalkFrameTime >= 150) {
       walkFrame = (walkFrame + 1) % 4;
       roomPlayer.dataset.walkFrame = String(walkFrame);
       lastWalkFrameTime = timestamp;
@@ -888,7 +907,8 @@ function movementLoop(timestamp) {
     }
   } else {
     roomPlayer.classList.remove("is-walking");
-    roomPlayer.dataset.walkFrame = "0";
+    walkFrame = 1;
+    roomPlayer.dataset.walkFrame = "1";
   }
 
   movementFrame = window.requestAnimationFrame(movementLoop);
@@ -914,6 +934,7 @@ function enterBedroomGame(savedState = null) {
   affectionLevel = Number.isFinite(savedState?.affection) ? savedState.affection : 10;
   memory111Complete = Boolean(savedState?.memory111Complete);
   memoryRewardFlags = new Set(Array.isArray(savedState?.memoryRewardFlags) ? savedState.memoryRewardFlags : []);
+  answerLog = Array.isArray(savedState?.answerLog) ? savedState.answerLog : [];
   replayHearts = Number.isFinite(savedState?.replayHearts) ? Math.max(0, Math.min(3, savedState.replayHearts)) : 3;
   memoryCompleteBadge.hidden = !memory111Complete;
   updateAffectionDisplay();
@@ -937,9 +958,6 @@ function enterBedroomGame(savedState = null) {
   playerPosition.x = Number.isFinite(savedPosition?.x) ? Math.max(bounds.minX, Math.min(bounds.maxX, savedPosition.x)) : 50;
   playerPosition.y = Number.isFinite(savedPosition?.y) ? Math.max(bounds.minY, Math.min(bounds.maxY, savedPosition.y)) : (savedScene === "bedroom" ? 66 : 78);
   renderPlayerPosition();
-  if (savedScene === "bedroom" && affectionLevel < 30) {
-    window.setTimeout(() => showSceneToast("提示：好感度达到 30% 后，才能和她好好沟通。"), 450);
-  }
   window.cancelAnimationFrame(movementFrame);
   lastMovementTime = performance.now();
   movementFrame = window.requestAnimationFrame(movementLoop);
@@ -975,6 +993,31 @@ shelfHotspot.addEventListener("click", () => {
   playSfx("message");
 });
 
+questionDirection.addEventListener("click", () => {
+  const closeEnough = bedroomGame.dataset.scene === "crossroads" && playerPosition.y <= 34 && playerPosition.x >= 35 && playerPosition.x <= 65;
+  if (!closeEnough) return showSceneToast("沿着上方小路再走近一点。" );
+  questionPlaceStatus.textContent = "";
+  questionPlacePanel.hidden = false;
+  movementKeys.clear();
+  playSfx("message");
+});
+
+questionPlaceSave.addEventListener("click", () => {
+  const answer = questionPlaceAnswer.value.trim();
+  if (!answer) {
+    questionPlaceStatus.textContent = "先写下你的答案呀。";
+    return;
+  }
+  recordAnswer("你觉得一段关系里，什么最能让你有安全感？", answer, "question-room");
+  questionPlaceStatus.textContent = "回答已保存 ♡";
+  playSfx("confirm");
+});
+
+questionPlaceBack.addEventListener("click", () => {
+  questionPlacePanel.hidden = true;
+  playSfx("soft");
+});
+
 memoryShelfClose.addEventListener("click", () => {
   memoryShelfModal.hidden = true;
   memoryConfirm.hidden = true;
@@ -1000,12 +1043,7 @@ roomGirl.addEventListener("click", () => {
     else showReplayDialogue({ speaker: "她", text: "哼～", onContinue: showFirstChoices });
     return;
   }
-  if (affectionLevel < 30) {
-    npcDialogueText.textContent = `好感度达到 30% 后，才能和${getHerTitle()}好好沟通。`;
-    npcDialogue.hidden = false;
-    playSfx("soft");
-    return;
-  }
+  if (affectionLevel < 30) pendingAffectionHint = true;
   playGirlHmph();
 });
 
@@ -1048,6 +1086,12 @@ achievementClose.addEventListener("click", () => {
 });
 
 npcDialogueClose.addEventListener("click", () => {
+  if (pendingAffectionHint) {
+    pendingAffectionHint = false;
+    npcDialogueText.textContent = `提示：好感度达到 30% 后，才能和${getHerTitle()}好好沟通。`;
+    playSfx("message");
+    return;
+  }
   npcDialogue.hidden = true;
   playSfx("soft");
 });

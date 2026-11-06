@@ -451,17 +451,16 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .scene-name { position: absolute; z-index: 7; top: calc(var(--safe-top) + 48px); left: 50%; margin: 0; padding: 6px 16px; border-radius: 999px; color: rgba(255,255,255,.88); background: rgba(60,45,105,.3); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28); backdrop-filter: blur(7px); transform: translateX(-50%); font-size: .72rem; letter-spacing: .12em; }
 .room-player { position: absolute; z-index: 4; width: clamp(110px, 9vw, 142px); aspect-ratio: 2 / 3; transform: translate(-50%, -50%); transform-origin: 50% 100%; will-change: left, top, transform; }
 .room-player::after { content: ""; position: absolute; z-index: -1; left: 21%; right: 21%; bottom: 4%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
-.room-player img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.room-player img { width: 100%; height: 100%; display: block; object-fit: contain; opacity: 0; }
 .room-player img.is-mirrored { transform: scaleX(-1); }
-.room-player.is-walking img { opacity: 0; }
-.room-player.is-walking::before { content: ""; position: absolute; left: 50%; bottom: 1%; width: 118%; aspect-ratio: 1; background: url("../assets/boy-walk-cycle-sheet.png") 0 0 / 400% 300% no-repeat; transform: translateX(-50%); }
-.room-player.is-walking[data-walk-frame="1"]::before { background-position-x: 33.333%; }
-.room-player.is-walking[data-walk-frame="2"]::before { background-position-x: 66.666%; }
-.room-player.is-walking[data-walk-frame="3"]::before { background-position-x: 100%; }
-.room-player.is-walking[data-facing="back"]::before { background-position-y: 50%; }
-.room-player.is-walking[data-facing="left"]::before,
-.room-player.is-walking[data-facing="right"]::before { background-position-y: 100%; }
-.room-player.is-walking[data-facing="right"]::before { transform: translateX(-50%) scaleX(-1); }
+.room-player::before { content: ""; position: absolute; left: 50%; bottom: 1%; width: 112%; aspect-ratio: 1; background: url("../assets/boy-walk-cycle-sheet.png") 0 0 / 400% 300% no-repeat; transform: translateX(-50%); }
+.room-player[data-walk-frame="1"]::before { background-position-x: 33.333%; }
+.room-player[data-walk-frame="2"]::before { background-position-x: 66.666%; }
+.room-player[data-walk-frame="3"]::before { background-position-x: 100%; }
+.room-player[data-facing="back"]::before { background-position-y: 50%; }
+.room-player[data-facing="left"]::before,
+.room-player[data-facing="right"]::before { background-position-y: 100%; }
+.room-player[data-facing="right"]::before { transform: translateX(-50%) scaleX(-1); }
 .room-girl { position: absolute; z-index: 5; left: 23%; top: 68%; width: clamp(120px, 9.2vw, 150px); aspect-ratio: 3 / 4; padding: 0; border: 0; outline: 0; color: #f49ac3; background: transparent; transform: translate(-50%, -50%); cursor: url("../assets/cursor-heart.png") 8 5, pointer; }
 .room-girl::after { content: ""; position: absolute; z-index: -1; left: 18%; right: 18%; bottom: 2%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
 .room-girl-sprite { position: absolute; inset: 0; display: block; background-image: url("../assets/girl-bed-interaction-strip.png"); background-repeat: no-repeat; background-size: 400% 100%; background-position: 0 0; transition: filter .2s ease; }
@@ -496,11 +495,16 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .shelf-hotspot { right: 7%; top: 47%; }
 .bedroom-game[data-scene="shop-interior"] .shelf-hotspot { display: block; opacity: .64; transform: translateY(0); animation: shelfBeacon 1.7s ease-in-out infinite; }
 .bedroom-game[data-scene="shop-interior"] .shelf-hotspot.is-near { opacity: 1; }
-.replay-direction { position: absolute; z-index: 6; right: 13%; top: 39%; min-width: 145px; padding: 11px 36px 11px 17px; border: 2px solid rgba(255,255,255,.78); border-radius: 16px; color: white; background: rgba(80,66,142,.76); box-shadow: 0 10px 28px rgba(35,25,60,.28), inset 0 0 18px rgba(255,255,255,.1); backdrop-filter: blur(10px); font: 700 clamp(.82rem,1.5vw,1.05rem)/1.15 "Kaiti SC",sans-serif; opacity: 0; transform: translateY(8px); transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
+.replay-direction { position: absolute; z-index: 6; right: 13%; top: 39%; min-width: 145px; padding: 11px 36px 11px 17px; border: 3px solid #8a5b48; border-radius: 5px; color: #5b3d56; background: linear-gradient(180deg,#f0c89e,#d99d76); box-shadow: inset 0 0 0 2px rgba(255,235,205,.5), 0 8px 18px rgba(35,25,60,.25); font: 700 clamp(.82rem,1.5vw,1.05rem)/1.15 "Kaiti SC",sans-serif; opacity: 0; transform: translateY(8px) rotate(-2deg); transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
 .replay-direction b { display:block; letter-spacing:.08em; }
-.replay-direction small { display:block; margin-top:3px; color:rgba(255,255,255,.74); font-size:.62em; font-weight:600; }
-.replay-direction span { position:absolute; right:11px; top:50%; color:#ffd5e8; font-size:1.35em; transform:translateY(-50%); }
-.bedroom-game[data-scene="crossroads"] .replay-direction.is-visible { opacity: 1; transform: translateY(0); }
+.replay-direction small { display:block; margin-top:3px; color:#81616e; font-size:.62em; font-weight:600; }
+.replay-direction span { position:absolute; right:11px; top:50%; color:#a54470; font-size:1.35em; transform:translateY(-50%); }
+.bedroom-game[data-scene="crossroads"] .replay-direction.is-visible { opacity: 1; transform: translateY(0) rotate(-2deg); }
+.question-direction { position:absolute; z-index:6; left:50%; top:22%; min-width:145px; padding:11px 17px 11px 42px; border:2px solid rgba(255,255,255,.82); border-radius:16px; color:white; background:rgba(91,111,170,.78); box-shadow:0 9px 24px rgba(35,25,60,.25),inset 0 0 18px rgba(255,255,255,.1); backdrop-filter:blur(9px); transform:translate(-50%,8px); opacity:0; transition:opacity .3s ease,transform .3s ease; pointer-events:none; font:700 clamp(.82rem,1.5vw,1.05rem)/1.15 "Kaiti SC",sans-serif; }
+.question-direction b,.question-direction small { display:block; }
+.question-direction small { margin-top:3px; color:rgba(255,255,255,.72); font-size:.62em; }
+.question-direction span { position:absolute; left:15px; top:50%; color:#d8e4ff; font-size:1.25em; transform:translateY(-50%); }
+.bedroom-game[data-scene="crossroads"] .question-direction.is-visible { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
 .replay-shop-title { position: absolute; z-index: 6; top: 8%; left: 50%; display: none; padding: 8px 25px; color: #6b4c7e; font: 700 clamp(1.15rem,2.3vw,1.8rem)/1 "Kaiti SC",sans-serif; letter-spacing: .14em; transform: translateX(-50%); text-shadow: 0 2px 0 rgba(255,255,255,.7); }
 .bedroom-game[data-scene="shop-exterior"] .replay-shop-title { display: block; }
 .scene-toast { position: absolute; z-index: 18; left: 50%; bottom: 16%; margin: 0; padding: 9px 16px; border-radius: 14px; color: white; background: rgba(69,48,119,.76); backdrop-filter: blur(8px); transform: translateX(-50%); opacity: 0; transition: opacity .2s ease; pointer-events: none; }
@@ -521,6 +525,16 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .memory-confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .memory-confirm-actions button { min-height: 48px; border: 1.5px solid #d9b9d1; border-radius: 15px; color: #5b4274; background: rgba(255,255,255,.7); font-weight: 700; }
 .memory-confirm-actions button:first-child { color: white; background: linear-gradient(145deg,#a786d3,#d47fae); }
+.question-place-panel { position:absolute; z-index:75; left:50%; top:50%; width:min(88vw,560px); padding:34px; border:2px solid rgba(255,255,255,.9); border-radius:28px; color:#503d6b; background:linear-gradient(160deg,rgba(250,247,255,.98),rgba(224,231,255,.97)); box-shadow:0 28px 85px rgba(31,29,68,.44); transform:translate(-50%,-50%); text-align:center; }
+.question-place-panel[hidden] { display:none; }
+.question-place-kicker { color:#788bc8; font:700 .68rem/1.2 Georgia,serif; letter-spacing:.2em; }
+.question-place-panel h2 { margin:10px 0 16px; font:700 1.8rem/1.2 "Kaiti SC","STKaiti",sans-serif; }
+.question-place-panel p { margin:0 0 17px; font:600 1.15rem/1.55 "Kaiti SC","STKaiti",sans-serif; }
+.question-place-panel textarea { width:100%; min-height:120px; resize:vertical; padding:15px; border:1.5px solid #c8cfea; border-radius:16px; color:#4f4166; background:rgba(255,255,255,.78); font:inherit; }
+.question-place-panel > div { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.question-place-panel button { min-height:46px; border:1.5px solid #c6cdeb; border-radius:14px; color:#566ba8; background:rgba(255,255,255,.72); font-weight:700; }
+.question-place-panel button:first-child { color:white; background:linear-gradient(145deg,#7d91ce,#a988cf); }
+.question-place-panel small { display:block; min-height:1.4em; margin-top:10px; color:#7884aa; }
 .replay-lives { position: absolute; z-index: 25; left: max(20px,env(safe-area-inset-left)); top: var(--safe-top); display: flex; gap: 8px; padding: 10px 15px; border: 2px solid rgba(255,255,255,.72); border-radius: 16px; background: rgba(62,47,105,.62); backdrop-filter: blur(8px); }
 .replay-lives[hidden] { display: none; }
 .replay-lives span { color: #f28bb8; font-size: 1.4rem; text-shadow: 0 0 8px rgba(255,177,215,.8); animation: lifeSway 1.25s ease-in-out infinite; }
@@ -553,12 +567,12 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .achievement-banner > span { color: #bd6f9a; font: 700 .68rem/1.2 Georgia,serif; letter-spacing: .2em; }
 .achievement-banner strong { display: block; margin: 12px 0 7px; font: 700 1.65rem/1.3 "Kaiti SC","STKaiti",sans-serif; }
 .achievement-banner p { margin: 0 0 22px; color: #8b6a91; }
-.bedroom-game[data-scene="memory-bedroom"] .room-girl { left: 79%; top: 60%; width: clamp(135px,10vw,166px); aspect-ratio: 3 / 4; }
+.bedroom-game[data-scene="memory-bedroom"] .room-girl { left: 79%; top: 60%; width: clamp(135px,10vw,166px); aspect-ratio: 1 / 1; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl-sprite { background-image: url("../assets/girl-desk-emotions-strip.png"); background-size: 300% 100%; background-position: 0 0; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="sad"] .room-girl-sprite { background-position: 50% 0; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="nod"] .room-girl-sprite { background-position: 100% 0; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="nod"] { animation: girlNod .65s ease 2; }
-.couple-interaction { position: absolute; z-index: 30; left: 79%; top: 61%; width: clamp(230px,19vw,310px); aspect-ratio: 1 / 1; background: url("../assets/couple-interaction-strip.png") 0 50% / 200% 100% no-repeat; transform: translate(-50%,-50%); filter: drop-shadow(0 7px 5px rgba(45,29,72,.2)); animation: coupleMoment 1.5s ease both; }
+.couple-interaction { position: absolute; z-index: 30; left: 79%; top: 61%; width: clamp(205px,17vw,276px); aspect-ratio: 1 / 1; background: url("../assets/couple-interaction-strip.png") 0 50% / 200% 100% no-repeat; transform: translate(-50%,-50%); filter: drop-shadow(0 7px 5px rgba(45,29,72,.2)); animation: coupleMoment 1.5s ease both; }
 .couple-interaction[hidden] { display: none; }
 .couple-interaction[data-action="kiss"] { background-position: 100% 50%; }
 .bedroom-game.is-couple-moment .room-player,
@@ -658,7 +672,10 @@ input,
   .replay-dialogue { bottom: max(115px,calc(var(--safe-bottom) + 90px)); width: calc(100vw - 22px); padding: 31px 18px 18px; }
   .replay-choices { grid-template-columns: 1fr; max-height: 33vh; overflow-y: auto; }
   .bedroom-game[data-scene="memory-bedroom"] .room-girl { left: 73%; top: 46%; width: clamp(92px,27vw,118px); }
-  .couple-interaction { left: 72%; top: 48%; width: clamp(170px,49vw,220px); }
+  .couple-interaction { left: 72%; top: 48%; width: clamp(150px,43vw,195px); }
+  .question-direction { top:28%; }
+  .question-place-panel { width:calc(100vw - 24px); padding:27px 20px; }
+  .question-place-panel > div { grid-template-columns:1fr; }
   .touch-controls { display: grid; }
 }
 
