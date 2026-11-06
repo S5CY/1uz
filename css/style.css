@@ -436,12 +436,12 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .game-save-chip strong { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .movement-hint { justify-self: end; margin: 0; padding: 9px 12px; border-radius: 12px; color: rgba(255,255,255,.8); background: rgba(72,48,128,.28); font-size: .72rem; backdrop-filter: blur(8px); }
 .movement-hint kbd { padding: 2px 5px; border: 1px solid rgba(255,255,255,.5); border-radius: 5px; color: white; background: rgba(255,255,255,.12); font: inherit; }
-.room-player { position: absolute; z-index: 4; width: clamp(82px, 7vw, 112px); aspect-ratio: 2 / 3; transform: translate(-50%, -50%); transform-origin: 50% 100%; will-change: left, top, transform; }
+.room-player { position: absolute; z-index: 4; width: clamp(110px, 9vw, 142px); aspect-ratio: 2 / 3; transform: translate(-50%, -50%); transform-origin: 50% 100%; will-change: left, top, transform; }
 .room-player::after { content: ""; position: absolute; z-index: -1; left: 21%; right: 21%; bottom: 4%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
 .room-player img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .room-player img.is-mirrored { transform: scaleX(-1); }
 .room-player.is-walking { animation: playerWalk .34s steps(2, end) infinite; }
-.room-girl { position: absolute; z-index: 5; left: 23%; top: 68%; width: clamp(94px, 7.4vw, 122px); aspect-ratio: 3 / 4; padding: 0; border: 0; outline: 0; color: #f49ac3; background: transparent; transform: translate(-50%, -50%); cursor: url("../assets/cursor-heart.png") 8 5, pointer; }
+.room-girl { position: absolute; z-index: 5; left: 23%; top: 68%; width: clamp(120px, 9.2vw, 150px); aspect-ratio: 3 / 4; padding: 0; border: 0; outline: 0; color: #f49ac3; background: transparent; transform: translate(-50%, -50%); cursor: url("../assets/cursor-heart.png") 8 5, pointer; }
 .room-girl::after { content: ""; position: absolute; z-index: -1; left: 18%; right: 18%; bottom: 2%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
 .room-girl-sprite { position: absolute; inset: 0; display: block; background-image: url("../assets/girl-bed-interaction-strip.png"); background-repeat: no-repeat; background-size: 400% 100%; background-position: 0 0; transition: filter .2s ease; }
 .room-girl[data-frame="1"] .room-girl-sprite { background-position: 33.333% 0; }
@@ -528,8 +528,8 @@ input,
   .game-save-chip { justify-self: end; }
   .movement-hint { display: none; }
   .bedroom-game { background-image: linear-gradient(180deg, rgba(58,40,105,.02), rgba(69,45,116,.06)), url("../assets/bedroom-game-mobile.png"); background-position: center; background-size: cover; }
-  .room-player { width: clamp(70px, 20vw, 92px); }
-  .room-girl { left: 27%; top: 58%; width: clamp(76px, 22vw, 98px); }
+  .room-player { width: clamp(86px, 24vw, 108px); }
+  .room-girl { left: 27%; top: 53%; width: clamp(84px, 24vw, 106px); }
   .npc-dialogue { bottom: max(112px, calc(var(--safe-bottom) + 90px)); width: calc(100vw - 28px); min-height: 98px; padding: 29px 45px 18px 27px; }
   .affection-control { left: max(12px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); }
   .affection-button { min-width: 82px; height: 46px; padding-inline: 13px; border-radius: 15px; }

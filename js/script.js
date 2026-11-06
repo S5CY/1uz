@@ -100,6 +100,9 @@ function updateAudioControls() {
   sfxVolume.value = String(audioState.sfx);
   bgmValue.value = `${audioState.bgm}%`;
   sfxValue.value = `${audioState.sfx}%`;
+  Object.values(sfx).forEach((sound) => {
+    sound.volume = audioState.sfx / 100;
+  });
 }
 
 function playSfx(name = "soft") {
@@ -174,15 +177,31 @@ audioSettingsToggle.addEventListener("click", () => {
   playSfx("toggle");
 });
 
-function updateVolume(kind, input, output) {
+function updateVolume(kind, input, output, preview = false) {
   audioState[kind] = Number(input.value);
   output.value = `${input.value}%`;
+  if (kind === "sfx") {
+    if (audioState.sfx > 0 && audioState.muted) {
+      audioState.muted = false;
+      soundToggle.setAttribute("aria-pressed", "false");
+      soundToggle.setAttribute("aria-label", "关闭全部声音");
+    }
+    Object.values(sfx).forEach((sound) => {
+      sound.volume = audioState.sfx / 100;
+    });
+  }
   saveAudioState();
+  if (preview) playSfx("soft");
 }
 
 bgmVolume.addEventListener("input", () => updateVolume("bgm", bgmVolume, bgmValue));
-sfxVolume.addEventListener("input", () => updateVolume("sfx", sfxVolume, sfxValue));
-sfxVolume.addEventListener("change", () => playSfx("confirm"));
+let sfxPreviewTimer;
+sfxVolume.addEventListener("input", () => {
+  updateVolume("sfx", sfxVolume, sfxValue);
+  window.clearTimeout(sfxPreviewTimer);
+  sfxPreviewTimer = window.setTimeout(() => playSfx("soft"), 90);
+});
+sfxVolume.addEventListener("change", () => updateVolume("sfx", sfxVolume, sfxValue, true));
 
 document.addEventListener("click", (event) => {
   if (!audioSettings.hidden && !event.target.closest(".utility-controls")) {
@@ -365,7 +384,7 @@ function renderPlayerPosition() {
 
 function updateGirlProximity() {
   const girlX = window.innerWidth <= 700 ? 27 : 23;
-  const girlY = window.innerWidth <= 700 ? 58 : 68;
+  const girlY = window.innerWidth <= 700 ? 53 : 68;
   const closeEnough = Math.abs(playerPosition.x - girlX) <= 15 && Math.abs(playerPosition.y - girlY) <= 11;
   roomGirl.classList.toggle("is-near", closeEnough);
   roomGirl.setAttribute("aria-label", closeEnough ? "和她说话" : "走近一点再和她说话");
