@@ -6,7 +6,15 @@
   <meta name="theme-color" content="#8f73c4">
   <meta name="description" content="有些话，还没有说完。">
   <title>1u · 有些话，还没有说完</title>
-  <link rel="stylesheet" href="css/style.css?v=20261105-2245">
+  <link rel="preload" as="image" href="assets/bedroom-game-desktop.png">
+  <link rel="preload" as="image" href="assets/crossroads-night.png">
+  <link rel="preload" as="image" href="assets/replay-shop-exterior.png">
+  <link rel="preload" as="image" href="assets/replay-shop-interior.png">
+  <link rel="preload" as="image" href="assets/bedroom-game-mobile.png" media="(max-width: 700px)">
+  <link rel="preload" as="image" href="assets/crossroads-night-mobile.png" media="(max-width: 700px)">
+  <link rel="preload" as="image" href="assets/replay-shop-exterior-mobile.png" media="(max-width: 700px)">
+  <link rel="preload" as="image" href="assets/replay-shop-interior-mobile.png" media="(max-width: 700px)">
+  <link rel="stylesheet" href="css/style.css?v=20261106-0010">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -141,8 +149,8 @@
 
       <button class="scene-hotspot bedroom-door" id="bedroom-door" type="button">出门 →</button>
       <button class="scene-hotspot crossroad-home" id="crossroad-home" type="button">← 回家</button>
-      <div class="replay-direction" id="replay-direction" aria-hidden="true">场景重演 <span>→</span></div>
-      <div class="replay-shop-title" aria-hidden="true">场景重演</div>
+      <div class="replay-direction" id="replay-direction" aria-hidden="true"><b>记忆小店</b><small>沿右边小路</small><span>→</span></div>
+      <div class="replay-shop-title" aria-hidden="true">记忆小店</div>
       <button class="scene-hotspot shop-door" id="shop-door" type="button">进入店里 ↑</button>
       <button class="scene-hotspot shelf-hotspot" id="shelf-hotspot" type="button">查看货架 ♡</button>
 
@@ -157,10 +165,10 @@
       <div class="affection-control">
         <button class="affection-button" id="affection-button" type="button" aria-label="查看好感度" aria-expanded="false" aria-controls="affection-popup">
           <span aria-hidden="true">♥</span>
-          <strong>10%</strong>
+          <strong id="affection-value">10%</strong>
         </button>
         <section class="affection-popup" id="affection-popup" aria-label="好感度" hidden>
-          <div><span>好感度</span><strong>10%</strong></div>
+          <div><span>好感度</span><strong id="affection-popup-value">10%</strong></div>
           <div class="affection-track" aria-hidden="true"><i></i></div>
           <p>她现在还不太想理你。</p>
         </section>
@@ -178,12 +186,46 @@
           <button class="memory-shelf-close" id="memory-shelf-close" type="button" aria-label="关闭货架">×</button>
           <div class="memory-ball" role="button" tabindex="0" aria-label="11.1 记忆球">
             <span>11.1</span>
+            <i class="memory-complete-badge" id="memory-complete-badge" aria-label="已完成" hidden>✓</i>
           </div>
           <p>目前只有这一颗。</p>
         </div>
+        <section class="memory-confirm" id="memory-confirm" hidden>
+          <span class="memory-confirm-kicker">MEMORY · 11.1</span>
+          <h2 id="memory-confirm-title">确定要重演那天的场景吗？</h2>
+          <div class="memory-confirm-actions">
+            <button id="memory-confirm-yes" type="button">确定</button>
+            <button id="memory-confirm-no" type="button">我再想想</button>
+          </div>
+        </section>
+      </section>
+
+      <div class="replay-lives" id="replay-lives" aria-label="剩余机会" hidden>
+        <span>♥</span><span>♥</span><span>♥</span>
+      </div>
+
+      <section class="replay-guide" id="replay-guide" hidden>
+        <strong>11.1 · 场景重演</strong>
+        <p>你有 3 次机会。走近她，再点击她开始对话；失败后只能重新再来。</p>
+        <button id="replay-guide-close" type="button">我知道了</button>
+      </section>
+
+      <section class="replay-dialogue" id="replay-dialogue" aria-live="polite" hidden>
+        <span class="replay-speaker" id="replay-speaker">她</span>
+        <p id="replay-dialogue-text"></p>
+        <div class="replay-choices" id="replay-choices"></div>
+        <button class="replay-continue" id="replay-continue" type="button">继续 →</button>
+      </section>
+
+      <div class="affection-gain" id="affection-gain" aria-live="polite" hidden>♥ 好感度 +5</div>
+      <section class="achievement-banner" id="achievement-banner" hidden>
+        <span>ACHIEVEMENT UNLOCKED</span>
+        <strong>11.1 已成功化解</strong>
+        <p>快截图收藏给她看 ♡</p>
+        <button id="achievement-close" type="button">收下</button>
       </section>
     </section>
   </main>
-  <script src="js/script.js?v=20261105-2315"></script>
+  <script src="js/script.js?v=20261106-0010"></script>
 </body>
 </html>

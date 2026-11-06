@@ -43,6 +43,25 @@ const shelfHotspot = document.getElementById("shelf-hotspot");
 const sceneToast = document.getElementById("scene-toast");
 const memoryShelfModal = document.getElementById("memory-shelf-modal");
 const memoryShelfClose = document.getElementById("memory-shelf-close");
+const memoryBall = document.querySelector(".memory-ball");
+const memoryCompleteBadge = document.getElementById("memory-complete-badge");
+const memoryConfirm = document.getElementById("memory-confirm");
+const memoryConfirmTitle = document.getElementById("memory-confirm-title");
+const memoryConfirmYes = document.getElementById("memory-confirm-yes");
+const memoryConfirmNo = document.getElementById("memory-confirm-no");
+const replayLives = document.getElementById("replay-lives");
+const replayGuide = document.getElementById("replay-guide");
+const replayGuideClose = document.getElementById("replay-guide-close");
+const replayDialogue = document.getElementById("replay-dialogue");
+const replaySpeaker = document.getElementById("replay-speaker");
+const replayDialogueText = document.getElementById("replay-dialogue-text");
+const replayChoices = document.getElementById("replay-choices");
+const replayContinue = document.getElementById("replay-continue");
+const affectionGain = document.getElementById("affection-gain");
+const achievementBanner = document.getElementById("achievement-banner");
+const achievementClose = document.getElementById("achievement-close");
+const affectionValue = document.getElementById("affection-value");
+const affectionPopupValue = document.getElementById("affection-popup-value");
 const touchControls = [...document.querySelectorAll("[data-direction]")];
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
@@ -90,6 +109,12 @@ const onboardingQuestions = [
 ];
 let onboardingIndex = 0;
 const onboardingAnswers = [];
+let affectionLevel = 10;
+let memory111Complete = false;
+let replayHearts = 3;
+let replayCheckpoint = "start";
+let replayStep = "start";
+let replayDialogueAction = null;
 
 function getStoryStorageKey(storyId) {
   return `1u-story-${encodeURIComponent(storyId)}-onboarding`;
@@ -412,12 +437,13 @@ function renderPlayerPosition() {
 }
 
 function updateGirlProximity() {
-  if (bedroomGame.dataset.scene !== "bedroom") {
+  if (!["bedroom", "memory-bedroom"].includes(bedroomGame.dataset.scene)) {
     roomGirl.classList.remove("is-near");
     return false;
   }
-  const girlX = window.innerWidth <= 700 ? 27 : 23;
-  const girlY = window.innerWidth <= 700 ? 53 : 68;
+  const inReplay = bedroomGame.dataset.scene === "memory-bedroom";
+  const girlX = window.innerWidth <= 700 ? 28 : (inReplay ? 29 : 23);
+  const girlY = window.innerWidth <= 700 ? (inReplay ? 54 : 53) : (inReplay ? 66 : 68);
   const closeEnough = Math.abs(playerPosition.x - girlX) <= 15 && Math.abs(playerPosition.y - girlY) <= 11;
   roomGirl.classList.toggle("is-near", closeEnough);
   roomGirl.setAttribute("aria-label", closeEnough ? "和她说话" : "走近一点再和她说话");
@@ -427,8 +453,9 @@ function updateGirlProximity() {
 const sceneLabels = {
   bedroom: "卧室",
   crossroads: "门外 · 三岔路",
-  "shop-exterior": "场景重演 · 店外",
-  "shop-interior": "场景重演 · 店内"
+  "shop-exterior": "记忆小店 · 店外",
+  "shop-interior": "记忆商店 · 大堂",
+  "memory-bedroom": "11.1 · 场景重演"
 };
 
 function showSceneToast(message) {
@@ -446,6 +473,7 @@ function setScene(scene, position = { x: 50, y: 72 }, facing = "front") {
   playerPosition.y = position.y;
   setPlayerFacing(facing);
   npcDialogue.hidden = true;
+  replayDialogue.hidden = true;
   affectionPopup.hidden = true;
   memoryShelfModal.hidden = true;
   renderPlayerPosition();
@@ -455,7 +483,7 @@ function setScene(scene, position = { x: 50, y: 72 }, facing = "front") {
 
 function updateSceneProximity() {
   const scene = bedroomGame.dataset.scene || "bedroom";
-  const nearBedroomDoor = scene === "bedroom" && playerPosition.x >= 72 && playerPosition.y >= 53;
+  const nearBedroomDoor = (scene === "bedroom" || scene === "memory-bedroom") && playerPosition.x >= 72 && playerPosition.y >= 53;
   const nearHome = scene === "crossroads" && playerPosition.x <= 27 && playerPosition.y >= 48;
   const nearShopDoor = scene === "shop-exterior" && playerPosition.y <= 37 && playerPosition.x >= 35 && playerPosition.x <= 65;
   const nearShelf = scene === "shop-interior" && playerPosition.x >= 67 && playerPosition.y <= 57;
@@ -472,6 +500,7 @@ function getSceneBounds() {
     case "crossroads": return { minX: 8, maxX: 92, minY: 26, maxY: 84 };
     case "shop-exterior": return { minX: 14, maxX: 86, minY: 24, maxY: 84 };
     case "shop-interior": return { minX: 12, maxX: 88, minY: 28, maxY: 84 };
+    case "memory-bedroom": return { minX: 12, maxX: 88, minY: 55, maxY: 77 };
     default: return { minX: 12, maxX: 88, minY: 55, maxY: 77 };
   }
 }
@@ -500,6 +529,266 @@ function playGirlHmph() {
   }, 420));
 }
 
+function getHerTitle() {
+  return onboardingAnswers[2] || "宝宝";
+}
+
+function updateAffectionDisplay() {
+  const label = `${affectionLevel}%`;
+  affectionValue.textContent = label;
+  affectionPopupValue.textContent = label;
+  document.documentElement.style.setProperty("--affection", label);
+}
+
+function showAffectionGain() {
+  affectionLevel = Math.min(100, affectionLevel + 5);
+  updateAffectionDisplay();
+  affectionGain.hidden = false;
+  affectionGain.getAnimations().forEach((animation) => animation.cancel());
+  affectionGain.animate(
+    [{ opacity: 0, transform: "translate(-50%,18px) scale(.7)" }, { opacity: 1, transform: "translate(-50%,0) scale(1)", offset: .25 }, { opacity: 1, transform: "translate(-50%,0) scale(1)", offset: .75 }, { opacity: 0, transform: "translate(-50%,-18px) scale(.9)" }],
+    { duration: 1900, easing: "ease-out" }
+  );
+  window.setTimeout(() => { affectionGain.hidden = true; }, 1900);
+  saveGameState(false);
+}
+
+function updateReplayLives() {
+  [...replayLives.children].forEach((heart, index) => heart.classList.toggle("is-lost", index >= replayHearts));
+}
+
+function showReplayDialogue({ speaker = "她", text, choices = [], onContinue = null }) {
+  replaySpeaker.textContent = speaker;
+  replayDialogueText.textContent = text;
+  replayChoices.replaceChildren();
+  replayDialogueAction = onContinue;
+  replayContinue.hidden = Boolean(choices.length) || !onContinue;
+  choices.forEach((choice, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `${String.fromCharCode(65 + index)}. ${choice.label}`;
+    button.addEventListener("click", choice.action, { once: true });
+    replayChoices.appendChild(button);
+  });
+  replayDialogue.hidden = false;
+  movementKeys.clear();
+  playSfx("message");
+}
+
+function hideReplayDialogue() {
+  replayDialogue.hidden = true;
+  replayChoices.replaceChildren();
+  replayDialogueAction = null;
+}
+
+function resetReplayToCheckpoint() {
+  hideReplayDialogue();
+  bedroomGame.classList.remove("is-hugging", "is-kissing");
+  if (replayCheckpoint === "quiet") {
+    replayStep = "quiet";
+    roomGirl.dataset.mood = "sad";
+  } else {
+    replayStep = "start";
+    roomGirl.dataset.mood = "turned";
+  }
+  roomGirl.dataset.frame = "3";
+  playerPosition.x = 78;
+  playerPosition.y = 66;
+  setPlayerFacing("left");
+  renderPlayerPosition();
+  showSceneToast("重新走近她，再试一次。" );
+}
+
+function loseReplayHeart(reaction) {
+  showReplayDialogue({
+    speaker: "她",
+    text: reaction,
+    onContinue: () => {
+      replayHearts -= 1;
+      updateReplayLives();
+      playSfx("soft");
+      if (replayHearts <= 0) {
+        hideReplayDialogue();
+        replayLives.hidden = true;
+        roomGirl.dataset.mood = "";
+        setScene("shop-interior", { x: 72, y: 55 }, "right");
+        showSceneToast("机会用完了，回到记忆商店重新再来吧。" );
+      } else {
+        roomGirl.dataset.mood = "turned";
+        resetReplayToCheckpoint();
+      }
+    }
+  });
+}
+
+function showFirstChoices() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "心里想法",
+    text: `${title}生气了，得安慰一下她……但是我不知道她为什么生气，怎么办？`,
+    choices: [
+      { label: "不理", action: () => loseReplayHeart("她抱紧手臂，把脸扭得更远了。") },
+      { label: "你咋了", action: () => loseReplayHeart("她皱了皱眉，没有回答。") },
+      { label: `${title}怎么了嘛，告诉我好不好`, action: () => {
+        roomGirl.dataset.mood = "sad";
+        showReplayDialogue({ speaker: "心里想法", text: `${title}好像还是在生气...`, onContinue: showSecondChoices });
+      } },
+      { label: "不要再浪费时间，写作业", action: () => loseReplayHeart("她的表情一下子更冷了。") }
+    ]
+  });
+}
+
+function showSecondChoices() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "选择回应",
+    text: "她低着头，还是没有开口。",
+    choices: [
+      { label: "你在吗？还生气？", action: () => loseReplayHeart("她沉默着，向旁边挪了一点。") },
+      { label: "不就说两句", action: () => loseReplayHeart("她抿住嘴，明显更难过了。") },
+      { label: "那我先不理你，你冷静一会儿", action: () => loseReplayHeart("她没有挽留，只是把头低得更深。") },
+      { label: `${title}，告诉我怎么了嘛`, action: () => showReplayDialogue({ speaker: "她", text: "没事...", onContinue: showThirdThought }) }
+    ]
+  });
+}
+
+function showThirdThought() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "心里想法",
+    text: `${title}说没事也不代表没事，我得继续哄。`,
+    onContinue: () => showReplayDialogue({
+      speaker: "选择回应",
+      text: "接下来要怎么做？",
+      choices: [
+        { label: "不理她，做自己的事去", action: () => loseReplayHeart("她看着你走开，眼神慢慢暗了下来。") },
+        { label: "抱抱她，承认错误", action: startHugSequence }
+      ]
+    })
+  });
+}
+
+function startHugSequence() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "你",
+    text: `${title}，我不知道我哪里错了，但是不想惹${title}生气嘛。告诉我好不好？`,
+    onContinue: () => {
+      hideReplayDialogue();
+      bedroomGame.classList.add("is-hugging");
+      playSfx("confirm");
+      window.setTimeout(() => {
+        bedroomGame.classList.remove("is-hugging");
+        replayCheckpoint = "quiet";
+        replayStep = "quiet";
+        replayHearts = 3;
+        updateReplayLives();
+        roomGirl.dataset.mood = "sad";
+        showAffectionGain();
+        showSceneToast("她好像有话要说。走近她，再点击她。" );
+        playerPosition.x = 54;
+        playerPosition.y = 68;
+        renderPlayerPosition();
+      }, 1550);
+    }
+  });
+}
+
+function startQuietConversation() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "心里想法",
+    text: "她怎么不开口...",
+    choices: [
+      { label: "快点说，什么事！", action: () => loseReplayHeart("她被你的语气吓了一下，又不说话了。") },
+      { label: `${title}，我理解你现在不高兴。我等你愿意了，你再告诉我为什么生气，好吗？`, action: () => {
+        roomGirl.dataset.mood = "nod";
+        showReplayDialogue({ speaker: "旁白", text: "过了一会儿之后...", onContinue: () => showReplayDialogue({ speaker: "她", text: "呃呃...", onContinue: showAfterWaitChoices }) });
+      } }
+    ]
+  });
+}
+
+function showAfterWaitChoices() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "选择回应",
+    text: "她终于小声开口了。",
+    choices: [
+      { label: "呃啥啊", action: () => loseReplayHeart("“呃啥啊？”\n她刚鼓起的勇气又缩了回去。") },
+      { label: "亲亲，然后问怎么了", action: () => {
+        hideReplayDialogue();
+        bedroomGame.classList.add("is-kissing");
+        playSfx("confirm");
+        window.setTimeout(() => {
+          bedroomGame.classList.remove("is-kissing");
+          showReplayDialogue({ speaker: "你", text: `怎么了，${title}？我在，慢慢说。`, onContinue: showHerExplanation });
+        }, 1450);
+      } }
+    ]
+  });
+}
+
+function showHerExplanation() {
+  showAffectionGain();
+  const lines = [
+    "你刚才一直在催我学习...",
+    "我不喜欢你这样...",
+    "我本来压力就很大了，我妈也要说我...",
+    "你还要催我...",
+    "我感觉不像我男朋友，像我妈...",
+    "我不喜欢你这样。"
+  ];
+  let index = 0;
+  const next = () => {
+    showReplayDialogue({ speaker: "她", text: lines[index], onContinue: () => {
+      index += 1;
+      if (index < lines.length) next();
+      else showFinalChoice();
+    } });
+  };
+  next();
+}
+
+function showFinalChoice() {
+  const title = getHerTitle();
+  showReplayDialogue({
+    speaker: "心里想法",
+    text: "原来是这样啊。",
+    choices: [
+      { label: `好，${title}，我知道了。我以后不会这样了，对不起`, action: completeMemory111 },
+      { label: "没听懂你为啥生气啊？", action: () => loseReplayHeart("她看着你，像是不知道还能怎么解释。") }
+    ]
+  });
+}
+
+function completeMemory111() {
+  hideReplayDialogue();
+  memory111Complete = true;
+  memoryCompleteBadge.hidden = false;
+  bedroomGame.classList.add("memory-complete");
+  replayLives.hidden = true;
+  roomGirl.dataset.mood = "nod";
+  saveGameState(false);
+  achievementBanner.hidden = false;
+  playSfx("confirm");
+}
+
+function enterMemoryReplay() {
+  memoryShelfModal.hidden = true;
+  memoryConfirm.hidden = true;
+  replayHearts = 3;
+  replayCheckpoint = "start";
+  replayStep = "start";
+  updateReplayLives();
+  replayLives.hidden = false;
+  bedroomGame.classList.remove("memory-complete", "is-hugging", "is-kissing");
+  roomGirl.dataset.frame = "3";
+  roomGirl.dataset.mood = "turned";
+  setScene("memory-bedroom", { x: 78, y: 66 }, "left");
+  replayGuide.hidden = false;
+}
+
 function setPlayerFacing(direction) {
   if (!direction || roomPlayer.dataset.facing === direction) return;
   roomPlayer.dataset.facing = direction;
@@ -510,11 +799,13 @@ function setPlayerFacing(direction) {
 function saveGameState(showFeedback = false) {
   const storyId = localStorage.getItem("1u-current-story-id");
   if (!storyId) return;
+  const currentScene = bedroomGame.dataset.scene || "bedroom";
   const state = {
-    scene: bedroomGame.dataset.scene || "bedroom",
-    position: { x: playerPosition.x, y: playerPosition.y },
+    scene: currentScene === "memory-bedroom" ? "shop-interior" : currentScene,
+    position: currentScene === "memory-bedroom" ? { x: 72, y: 55 } : { x: playerPosition.x, y: playerPosition.y },
     facing: roomPlayer.dataset.facing || "front",
-    affection: 10,
+    affection: affectionLevel,
+    memory111Complete,
     audio: { ...audioState },
     savedAt: Date.now()
   };
@@ -530,7 +821,7 @@ function savePlayerPosition() { saveGameState(false); }
 
 function movementLoop(timestamp) {
   if (!document.body.classList.contains("bedroom-game-active")) return;
-  if (!memoryShelfModal.hidden) {
+  if (!memoryShelfModal.hidden || !replayDialogue.hidden || !replayGuide.hidden || !achievementBanner.hidden) {
     movementKeys.clear();
     movementFrame = window.requestAnimationFrame(movementLoop);
     return;
@@ -556,6 +847,8 @@ function movementLoop(timestamp) {
 
     if (bedroomGame.dataset.scene === "crossroads" && playerPosition.x >= 91) {
       setScene("shop-exterior", { x: 50, y: 78 }, "back");
+    } else if (bedroomGame.dataset.scene === "shop-exterior" && playerPosition.x <= 14) {
+      setScene("crossroads", { x: 88, y: 78 }, "left");
     } else if (bedroomGame.dataset.scene === "shop-exterior" && playerPosition.y <= 25 && playerPosition.x >= 35 && playerPosition.x <= 65) {
       setScene("shop-interior", { x: 25, y: 76 }, "back");
     } else if (bedroomGame.dataset.scene === "shop-interior" && playerPosition.y >= 83 && playerPosition.x <= 35) {
@@ -585,6 +878,10 @@ function enterBedroomGame(savedState = null) {
     saveAudioState();
     updateAudioControls();
   }
+  affectionLevel = Number.isFinite(savedState?.affection) ? savedState.affection : 10;
+  memory111Complete = Boolean(savedState?.memory111Complete);
+  memoryCompleteBadge.hidden = !memory111Complete;
+  updateAffectionDisplay();
   gameStoryId.textContent = storyId;
   onboardingScreen.hidden = true;
   document.body.classList.remove("onboarding-active");
@@ -611,6 +908,13 @@ function enterBedroomGame(savedState = null) {
 
 bedroomDoor.addEventListener("click", () => {
   if (!bedroomDoor.classList.contains("is-near")) return showSceneToast("走到门边再出门吧。");
+  if (bedroomGame.dataset.scene === "memory-bedroom") {
+    if (!memory111Complete) return showSceneToast("门还锁着。先好好和她把话说完。" );
+    replayLives.hidden = true;
+    roomGirl.dataset.mood = "";
+    bedroomGame.classList.remove("memory-complete");
+    return setScene("shop-interior", { x: 72, y: 55 }, "right");
+  }
   setScene("crossroads", { x: 50, y: 78 }, "back");
 });
 
@@ -625,14 +929,16 @@ shopDoor.addEventListener("click", () => {
 });
 
 shelfHotspot.addEventListener("click", () => {
-  if (!shelfHotspot.classList.contains("is-near")) return;
+  if (!shelfHotspot.classList.contains("is-near")) return showSceneToast("走近货架，再点击查看。" );
   memoryShelfModal.hidden = false;
+  memoryConfirm.hidden = true;
   movementKeys.clear();
   playSfx("message");
 });
 
 memoryShelfClose.addEventListener("click", () => {
   memoryShelfModal.hidden = true;
+  memoryConfirm.hidden = true;
   playSfx("soft");
 });
 
@@ -650,7 +956,50 @@ roomGirl.addEventListener("click", () => {
     playSfx("soft");
     return;
   }
+  if (bedroomGame.dataset.scene === "memory-bedroom") {
+    if (replayStep === "quiet") startQuietConversation();
+    else showReplayDialogue({ speaker: "她", text: "哼～", onContinue: showFirstChoices });
+    return;
+  }
   playGirlHmph();
+});
+
+memoryBall.addEventListener("click", () => {
+  memoryConfirmTitle.textContent = memory111Complete ? "你已经完成了这个记忆点，要重温一遍吗？" : "确定要重演那天的场景吗？";
+  memoryConfirmYes.textContent = memory111Complete ? "要" : "确定";
+  memoryConfirmNo.textContent = memory111Complete ? "不要" : "我再想想";
+  memoryConfirm.hidden = false;
+  playSfx("message");
+});
+
+memoryBall.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    memoryBall.click();
+  }
+});
+
+memoryConfirmYes.addEventListener("click", enterMemoryReplay);
+memoryConfirmNo.addEventListener("click", () => {
+  memoryConfirm.hidden = true;
+  memoryShelfModal.hidden = true;
+  playSfx("soft");
+});
+
+replayGuideClose.addEventListener("click", () => {
+  replayGuide.hidden = true;
+  showSceneToast("走近她，再点击她。" );
+});
+
+replayContinue.addEventListener("click", () => {
+  const action = replayDialogueAction;
+  replayDialogueAction = null;
+  if (action) action();
+});
+
+achievementClose.addEventListener("click", () => {
+  achievementBanner.hidden = true;
+  showSceneToast("门已经解锁，可以离开了。" );
 });
 
 npcDialogueClose.addEventListener("click", () => {
