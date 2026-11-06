@@ -22,6 +22,12 @@ const dialogueNext = document.getElementById("dialogue-next");
 const dialogueStatus = document.getElementById("dialogue-status");
 const sceneStep = document.getElementById("scene-step");
 const sceneBack = document.getElementById("scene-back");
+const bedroomGame = document.getElementById("bedroom-game");
+const roomPlayer = document.getElementById("room-player");
+const roomPlayerSprite = document.getElementById("room-player-sprite");
+const gameStoryId = document.getElementById("game-story-id");
+const gameExit = document.getElementById("game-exit");
+const touchControls = [...document.querySelectorAll("[data-direction]")];
 const characterSprites = [...document.querySelectorAll(".character-sprite")];
 const savedAudio = JSON.parse(localStorage.getItem("1u-audio") || "{}");
 const sfx = {
@@ -52,7 +58,7 @@ const onboardingQuestions = [
   {
     type: "choice",
     question: "那你平时怎么称呼她？",
-    options: ["宝宝", "老婆", "姐姐", "自己输入"],
+    options: ["宝宝", "老婆", "妈妈", "自己输入"],
     customPlaceholder: "输入你对她的称呼"
   },
   {
@@ -71,6 +77,10 @@ const onboardingAnswers = [];
 
 function getStoryStorageKey(storyId) {
   return `1u-story-${encodeURIComponent(storyId)}-onboarding`;
+}
+
+function getRoomStorageKey(storyId) {
+  return `1u-story-${encodeURIComponent(storyId)}-room-position`;
 }
 
 function saveAudioState() {
@@ -314,8 +324,146 @@ onboardingForm.addEventListener("submit", (event) => {
   } else {
     const storyId = localStorage.getItem("1u-current-story-id");
     localStorage.setItem(getStoryStorageKey(storyId), JSON.stringify(onboardingAnswers));
-    dialogueStatus.textContent = "问题预览结束——答案已暂存在这台设备。";
+    dialogueStatus.textContent = "存档完成，正在进入卧室……";
+    window.setTimeout(enterBedroomGame, 650);
   }
+});
+
+const movementKeys = new Set();
+const directionKeys = {
+  w: "up",
+  arrowup: "up",
+  s: "down",
+  arrowdown: "down",
+  a: "left",
+  arrowleft: "left",
+  d: "right",
+  arrowright: "right"
+};
+const playerSprites = {
+  front: "assets/boy-walk-front.png",
+  back: "assets/boy-walk-back.png",
+  left: "assets/boy-walk-left.png",
+  right: "assets/boy-walk-left.png"
+};
+const playerPosition = { x: 50, y: 64 };
+let movementFrame;
+let lastMovementTime = 0;
+
+function renderPlayerPosition() {
+  roomPlayer.style.left = `${playerPosition.x}%`;
+  roomPlayer.style.top = `${playerPosition.y}%`;
+}
+
+function setPlayerFacing(direction) {
+  if (!direction || roomPlayer.dataset.facing === direction) return;
+  roomPlayer.dataset.facing = direction;
+  roomPlayerSprite.src = playerSprites[direction];
+  roomPlayerSprite.classList.toggle("is-mirrored", direction === "right");
+}
+
+function savePlayerPosition() {
+  const storyId = localStorage.getItem("1u-current-story-id");
+  if (!storyId) return;
+  localStorage.setItem(getRoomStorageKey(storyId), JSON.stringify(playerPosition));
+}
+
+function movementLoop(timestamp) {
+  if (!document.body.classList.contains("bedroom-game-active")) return;
+  const elapsed = Math.min((timestamp - lastMovementTime) / 16.67 || 1, 2);
+  lastMovementTime = timestamp;
+  let horizontal = 0;
+  let vertical = 0;
+
+  if (movementKeys.has("left")) horizontal -= 1;
+  if (movementKeys.has("right")) horizontal += 1;
+  if (movementKeys.has("up")) vertical -= 1;
+  if (movementKeys.has("down")) vertical += 1;
+
+  if (horizontal || vertical) {
+    const diagonal = horizontal && vertical ? Math.SQRT1_2 : 1;
+    playerPosition.x = Math.max(12, Math.min(88, playerPosition.x + horizontal * .34 * elapsed * diagonal));
+    playerPosition.y = Math.max(55, Math.min(77, playerPosition.y + vertical * .34 * elapsed * diagonal));
+    setPlayerFacing(Math.abs(horizontal) > Math.abs(vertical) ? (horizontal < 0 ? "left" : "right") : (vertical < 0 ? "back" : "front"));
+    roomPlayer.classList.add("is-walking");
+    renderPlayerPosition();
+  } else {
+    roomPlayer.classList.remove("is-walking");
+  }
+
+  movementFrame = window.requestAnimationFrame(movementLoop);
+}
+
+function enterBedroomGame() {
+  const storyId = localStorage.getItem("1u-current-story-id") || "未命名";
+  let savedPosition;
+  try {
+    savedPosition = JSON.parse(localStorage.getItem(getRoomStorageKey(storyId)) || "null");
+  } catch {
+    savedPosition = null;
+  }
+  if (savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y)) {
+    playerPosition.x = Math.max(12, Math.min(88, savedPosition.x));
+    playerPosition.y = Math.max(55, Math.min(77, savedPosition.y));
+  }
+  gameStoryId.textContent = storyId;
+  onboardingScreen.hidden = true;
+  document.body.classList.remove("onboarding-active");
+  bedroomGame.hidden = false;
+  document.body.classList.add("bedroom-game-active");
+  roomPlayer.dataset.facing = "front";
+  roomPlayerSprite.src = "assets/boy-casual.png";
+  roomPlayerSprite.classList.remove("is-mirrored");
+  renderPlayerPosition();
+  window.cancelAnimationFrame(movementFrame);
+  lastMovementTime = performance.now();
+  movementFrame = window.requestAnimationFrame(movementLoop);
+}
+
+function setMovement(direction, active) {
+  if (active) movementKeys.add(direction);
+  else movementKeys.delete(direction);
+}
+
+window.addEventListener("keydown", (event) => {
+  const direction = directionKeys[event.key.toLowerCase()];
+  if (!direction || !document.body.classList.contains("bedroom-game-active")) return;
+  event.preventDefault();
+  setMovement(direction, true);
+});
+
+window.addEventListener("keyup", (event) => {
+  const direction = directionKeys[event.key.toLowerCase()];
+  if (!direction) return;
+  setMovement(direction, false);
+  savePlayerPosition();
+});
+
+touchControls.forEach((button) => {
+  const direction = button.dataset.direction;
+  const stop = () => {
+    setMovement(direction, false);
+    savePlayerPosition();
+  };
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    button.setPointerCapture?.(event.pointerId);
+    setMovement(direction, true);
+  });
+  button.addEventListener("pointerup", stop);
+  button.addEventListener("pointercancel", stop);
+  button.addEventListener("lostpointercapture", stop);
+});
+
+gameExit.addEventListener("click", () => {
+  savePlayerPosition();
+  movementKeys.clear();
+  window.cancelAnimationFrame(movementFrame);
+  document.body.classList.remove("bedroom-game-active");
+  bedroomGame.hidden = true;
+  onboardingScreen.hidden = false;
+  document.body.classList.add("onboarding-active");
+  playSfx("soft");
 });
 
 sceneBack.addEventListener("click", () => {

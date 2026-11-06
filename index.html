@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#8f73c4">
   <meta name="description" content="有些话，还没有说完。">
   <title>1u · 有些话，还没有说完</title>
-  <link rel="stylesheet" href="css/style.css?v=20261105-1530">
+  <link rel="stylesheet" href="css/style.css?v=20261105-1600">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -117,7 +117,26 @@
         </form>
       </div>
     </section>
+
+    <section class="bedroom-game" id="bedroom-game" aria-label="可以探索的卧室" hidden>
+      <div class="game-hud">
+        <button class="game-exit" id="game-exit" type="button">← 返回问题</button>
+        <div class="game-save-chip"><span>存档</span><strong id="game-story-id">—</strong></div>
+        <p class="movement-hint"><kbd>WASD</kbd> 或方向键移动</p>
+      </div>
+
+      <div class="room-player" id="room-player" data-facing="front">
+        <img id="room-player-sprite" src="assets/boy-casual.png" alt="可以在卧室里走动的男生角色">
+      </div>
+
+      <div class="touch-controls" aria-label="移动方向键">
+        <button type="button" data-direction="up" aria-label="向上走">▲</button>
+        <button type="button" data-direction="left" aria-label="向左走">◀</button>
+        <button type="button" data-direction="down" aria-label="向下走">▼</button>
+        <button type="button" data-direction="right" aria-label="向右走">▶</button>
+      </div>
+    </section>
   </main>
-  <script src="js/script.js?v=20261105-1530"></script>
+  <script src="js/script.js?v=20261105-1600"></script>
 </body>
 </html>
