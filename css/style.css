@@ -432,9 +432,11 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .bedroom-game[data-scene="crossroads"] { background-image: linear-gradient(180deg, rgba(34,48,89,.04), rgba(76,53,111,.08)), url("../assets/crossroads-night.png"); }
 .bedroom-game[data-scene="shop-exterior"] { background-image: linear-gradient(180deg, rgba(34,48,89,.03), rgba(76,53,111,.08)), url("../assets/replay-shop-exterior.png"); }
 .bedroom-game[data-scene="shop-interior"] { background-image: linear-gradient(180deg, rgba(34,48,89,.02), rgba(76,53,111,.06)), url("../assets/replay-shop-interior.png"); }
+.bedroom-game[data-scene="question-exterior"] { background-image: linear-gradient(180deg, rgba(34,48,89,.03), rgba(76,53,111,.06)), url("../assets/question-house-exterior.png"); }
+.bedroom-game[data-scene="question-interior"] { background-image: linear-gradient(180deg, rgba(38,46,82,.03), rgba(66,50,93,.06)), url("../assets/question-house-interior.png"); }
 .bedroom-game:not([data-scene="bedroom"]):not([data-scene="memory-bedroom"]) .room-girl,
 .bedroom-game:not([data-scene="bedroom"]):not([data-scene="memory-bedroom"]) .npc-dialogue { display: none; }
-.bedroom-game[data-scene="memory-bedroom"] { background-image: linear-gradient(180deg, rgba(38,46,82,.08), rgba(66,50,93,.13)), url("../assets/bedroom-game-desktop.png"); }
+.bedroom-game[data-scene="memory-bedroom"] { background-image: linear-gradient(180deg, rgba(38,46,82,.08), rgba(66,50,93,.13)), url("../assets/memory-bedroom-game-desktop.png"); }
 .bedroom-game[data-scene="memory-bedroom"] .game-exit,
 .bedroom-game[data-scene="memory-bedroom"] .game-save-cluster,
 .bedroom-game[data-scene="memory-bedroom"] .movement-hint,
@@ -453,10 +455,12 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .room-player::after { content: ""; position: absolute; z-index: -1; left: 21%; right: 21%; bottom: 4%; height: 7%; border-radius: 50%; background: rgba(55,31,89,.2); filter: blur(3px); }
 .room-player img { width: 100%; height: 100%; display: block; object-fit: contain; opacity: 0; }
 .room-player img.is-mirrored { transform: scaleX(-1); }
-.room-player::before { content: ""; position: absolute; left: 50%; bottom: 1%; width: 112%; aspect-ratio: 1; background: url("../assets/boy-walk-cycle-sheet.png") 0 0 / 400% 300% no-repeat; transform: translateX(-50%); }
-.room-player[data-walk-frame="1"]::before { background-position-x: 33.333%; }
-.room-player[data-walk-frame="2"]::before { background-position-x: 66.666%; }
-.room-player[data-walk-frame="3"]::before { background-position-x: 100%; }
+.room-player::before { content: ""; position: absolute; left: 50%; bottom: 1%; width: 112%; aspect-ratio: 1; background: url("../assets/boy-walk-cycle-sheet.png") 0 0 / 600% 300% no-repeat; transform: translateX(-50%); }
+.room-player[data-walk-frame="1"]::before { background-position-x: 20%; }
+.room-player[data-walk-frame="2"]::before { background-position-x: 40%; }
+.room-player[data-walk-frame="3"]::before { background-position-x: 60%; }
+.room-player[data-walk-frame="4"]::before { background-position-x: 80%; }
+.room-player[data-walk-frame="5"]::before { background-position-x: 100%; }
 .room-player[data-facing="back"]::before { background-position-y: 50%; }
 .room-player[data-facing="left"]::before,
 .room-player[data-facing="right"]::before { background-position-y: 100%; }
@@ -493,6 +497,11 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .shop-door { left: 50%; top: 45%; transform: translate(-50%, 5px); }
 .shop-door.is-near { transform: translate(-50%, 0); }
 .shelf-hotspot { right: 7%; top: 47%; }
+.question-house-door { left: 50%; top: 35%; transform: translate(-50%,5px); }
+.question-house-door.is-near { transform: translate(-50%,0); }
+.question-house-exit { left: 4%; bottom: 17%; }
+.question-spot { left: 50%; top: 44%; transform: translate(-50%,5px); }
+.question-spot.is-near { transform: translate(-50%,0); }
 .bedroom-game[data-scene="shop-interior"] .shelf-hotspot { display: block; opacity: .64; transform: translateY(0); animation: shelfBeacon 1.7s ease-in-out infinite; }
 .bedroom-game[data-scene="shop-interior"] .shelf-hotspot.is-near { opacity: 1; }
 .replay-direction { position: absolute; z-index: 6; right: 13%; top: 39%; min-width: 145px; padding: 11px 36px 11px 17px; border: 3px solid #8a5b48; border-radius: 5px; color: #5b3d56; background: linear-gradient(180deg,#f0c89e,#d99d76); box-shadow: inset 0 0 0 2px rgba(255,235,205,.5), 0 8px 18px rgba(35,25,60,.25); font: 700 clamp(.82rem,1.5vw,1.05rem)/1.15 "Kaiti SC",sans-serif; opacity: 0; transform: translateY(8px) rotate(-2deg); transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
@@ -572,7 +581,7 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="sad"] .room-girl-sprite { background-position: 50% 0; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="nod"] .room-girl-sprite { background-position: 100% 0; }
 .bedroom-game[data-scene="memory-bedroom"] .room-girl[data-mood="nod"] { animation: girlNod .65s ease 2; }
-.couple-interaction { position: absolute; z-index: 30; left: 79%; top: 61%; width: clamp(205px,17vw,276px); aspect-ratio: 1 / 1; background: url("../assets/couple-interaction-strip.png") 0 50% / 200% 100% no-repeat; transform: translate(-50%,-50%); filter: drop-shadow(0 7px 5px rgba(45,29,72,.2)); animation: coupleMoment 1.5s ease both; }
+.couple-interaction { position: absolute; z-index: 30; left: 79%; top: 61%; width: clamp(170px,14vw,230px); aspect-ratio: 1 / 1; background: url("../assets/couple-interaction-strip.png") 0 50% / 200% 100% no-repeat; transform: translate(-50%,-50%); filter: drop-shadow(0 7px 5px rgba(45,29,72,.2)); animation: coupleMoment 1.5s ease both; }
 .couple-interaction[hidden] { display: none; }
 .couple-interaction[data-action="kiss"] { background-position: 100% 50%; }
 .bedroom-game.is-couple-moment .room-player,
@@ -652,7 +661,9 @@ input,
   .bedroom-game[data-scene="crossroads"] { background-image: linear-gradient(180deg, rgba(34,48,89,.03), rgba(76,53,111,.06)), url("../assets/crossroads-night-mobile.png"); }
   .bedroom-game[data-scene="shop-exterior"] { background-image: linear-gradient(180deg, rgba(34,48,89,.02), rgba(76,53,111,.06)), url("../assets/replay-shop-exterior-mobile.png"); }
   .bedroom-game[data-scene="shop-interior"] { background-image: linear-gradient(180deg, rgba(34,48,89,.02), rgba(76,53,111,.05)), url("../assets/replay-shop-interior-mobile.png"); }
-  .bedroom-game[data-scene="memory-bedroom"] { background-image: linear-gradient(180deg,rgba(38,46,82,.06),rgba(66,50,93,.1)),url("../assets/bedroom-game-mobile.png"); }
+  .bedroom-game[data-scene="question-exterior"] { background-image: linear-gradient(180deg,rgba(34,48,89,.02),rgba(76,53,111,.05)),url("../assets/question-house-exterior-mobile.png"); }
+  .bedroom-game[data-scene="question-interior"] { background-image: linear-gradient(180deg,rgba(38,46,82,.02),rgba(66,50,93,.05)),url("../assets/question-house-interior-mobile.png"); }
+  .bedroom-game[data-scene="memory-bedroom"] { background-image: linear-gradient(180deg,rgba(38,46,82,.06),rgba(66,50,93,.1)),url("../assets/memory-bedroom-game-mobile.png"); }
   .room-player { width: clamp(86px, 24vw, 108px); }
   .room-girl { left: 27%; top: 53%; width: clamp(84px, 24vw, 106px); }
   .npc-dialogue { bottom: max(112px, calc(var(--safe-bottom) + 90px)); width: calc(100vw - 28px); min-height: 98px; padding: 29px 45px 18px 27px; }
@@ -672,7 +683,7 @@ input,
   .replay-dialogue { bottom: max(115px,calc(var(--safe-bottom) + 90px)); width: calc(100vw - 22px); padding: 31px 18px 18px; }
   .replay-choices { grid-template-columns: 1fr; max-height: 33vh; overflow-y: auto; }
   .bedroom-game[data-scene="memory-bedroom"] .room-girl { left: 73%; top: 46%; width: clamp(92px,27vw,118px); }
-  .couple-interaction { left: 72%; top: 48%; width: clamp(150px,43vw,195px); }
+  .couple-interaction { left: 72%; top: 48%; width: clamp(125px,36vw,165px); }
   .question-direction { top:28%; }
   .question-place-panel { width:calc(100vw - 24px); padding:27px 20px; }
   .question-place-panel > div { grid-template-columns:1fr; }

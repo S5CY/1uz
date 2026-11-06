@@ -42,6 +42,9 @@ const replayDirection = document.getElementById("replay-direction");
 const questionDirection = document.getElementById("question-direction");
 const shopDoor = document.getElementById("shop-door");
 const shelfHotspot = document.getElementById("shelf-hotspot");
+const questionHouseDoor = document.getElementById("question-house-door");
+const questionHouseExit = document.getElementById("question-house-exit");
+const questionSpot = document.getElementById("question-spot");
 const sceneToast = document.getElementById("scene-toast");
 const memoryShelfModal = document.getElementById("memory-shelf-modal");
 const memoryShelfClose = document.getElementById("memory-shelf-close");
@@ -468,6 +471,8 @@ const sceneLabels = {
   crossroads: "门外 · 三岔路",
   "shop-exterior": "记忆小店 · 店外",
   "shop-interior": "记忆商店 · 大堂",
+  "question-exterior": "问题小屋 · 门外",
+  "question-interior": "问题小屋",
   "memory-bedroom": "11.1 · 场景重演"
 };
 
@@ -501,11 +506,17 @@ function updateSceneProximity() {
   const nearHome = scene === "crossroads" && playerPosition.x <= 27 && playerPosition.y >= 48;
   const nearShopDoor = scene === "shop-exterior" && playerPosition.y <= 37 && playerPosition.x >= 35 && playerPosition.x <= 65;
   const nearShelf = scene === "shop-interior" && playerPosition.x >= 67 && playerPosition.y <= 57;
+  const nearQuestionDoor = scene === "question-exterior" && playerPosition.y <= 38 && playerPosition.x >= 36 && playerPosition.x <= 64;
+  const nearQuestionExit = scene === "question-interior" && playerPosition.x <= 26 && playerPosition.y >= 52;
+  const nearQuestionSpot = scene === "question-interior" && playerPosition.y <= 48 && playerPosition.x >= 34 && playerPosition.x <= 66;
 
   bedroomDoor.classList.toggle("is-near", nearBedroomDoor);
   crossroadHome.classList.toggle("is-near", nearHome);
   shopDoor.classList.toggle("is-near", nearShopDoor);
   shelfHotspot.classList.toggle("is-near", nearShelf);
+  questionHouseDoor.classList.toggle("is-near", nearQuestionDoor);
+  questionHouseExit.classList.toggle("is-near", nearQuestionExit);
+  questionSpot.classList.toggle("is-near", nearQuestionSpot);
   replayDirection.classList.toggle("is-visible", scene === "crossroads" && playerPosition.x >= 58);
   questionDirection.classList.toggle("is-visible", scene === "crossroads" && playerPosition.y <= 45 && playerPosition.x >= 35 && playerPosition.x <= 65);
 }
@@ -515,6 +526,8 @@ function getSceneBounds() {
     case "crossroads": return { minX: 8, maxX: 92, minY: 26, maxY: 84 };
     case "shop-exterior": return { minX: 14, maxX: 86, minY: 24, maxY: 84 };
     case "shop-interior": return { minX: 12, maxX: 88, minY: 28, maxY: 84 };
+    case "question-exterior": return { minX: 12, maxX: 88, minY: 25, maxY: 84 };
+    case "question-interior": return { minX: 12, maxX: 88, minY: 30, maxY: 84 };
     case "memory-bedroom": return { minX: 12, maxX: 88, minY: 55, maxY: 77 };
     default: return { minX: 12, maxX: 88, minY: 55, maxY: 77 };
   }
@@ -578,9 +591,49 @@ function updateReplayLives() {
   [...replayLives.children].forEach((heart, index) => heart.classList.toggle("is-lost", index >= replayHearts));
 }
 
+function getBackendBaseUrl() {
+  return String(window.ONE_U_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
+}
+
+function getSessionId() {
+  let sessionId = sessionStorage.getItem("1u-session-id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem("1u-session-id", sessionId);
+  }
+  return sessionId;
+}
+
+async function sendAnswerToBackend(entry) {
+  const baseUrl = getBackendBaseUrl();
+  if (!baseUrl) return;
+  const storyId = localStorage.getItem("1u-current-story-id");
+  if (!storyId) return;
+  try {
+    await fetch(`${baseUrl}/api/events`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        storyId,
+        sessionId: getSessionId(),
+        eventType: entry.scene === "question-room" ? "written-answer" : "choice",
+        scene: entry.scene,
+        prompt: entry.prompt,
+        answer: entry.answer,
+        clientTimestamp: entry.recordedAt,
+        metadata: { affection: affectionLevel }
+      })
+    });
+  } catch {
+    // Local storage remains the offline fallback. A later answer can still sync normally.
+  }
+}
+
 function recordAnswer(prompt, answer, scene = bedroomGame.dataset.scene || "unknown") {
-  answerLog.push({ scene, prompt, answer, recordedAt: new Date().toISOString() });
+  const entry = { scene, prompt, answer, recordedAt: new Date().toISOString() };
+  answerLog.push(entry);
   saveGameState(false);
+  sendAnswerToBackend(entry);
 }
 
 function showReplayDialogue({ speaker = "她", text, choices = [], onContinue = null }) {
@@ -834,6 +887,26 @@ function setPlayerFacing(direction) {
   roomPlayerSprite.classList.toggle("is-mirrored", direction === "right");
 }
 
+async function sendProgressToBackend(storyId, state) {
+  const baseUrl = getBackendBaseUrl();
+  if (!baseUrl || !storyId) return;
+  try {
+    await fetch(`${baseUrl}/api/progress`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        storyId,
+        scene: state.scene,
+        affection: state.affection,
+        memory111Complete: state.memory111Complete,
+        payload: { position: state.position, facing: state.facing, savedAt: state.savedAt }
+      })
+    });
+  } catch {
+    // Keep the local save even when the backend is offline.
+  }
+}
+
 function saveGameState(showFeedback = false) {
   const storyId = localStorage.getItem("1u-current-story-id");
   if (!storyId) return;
@@ -854,6 +927,7 @@ function saveGameState(showFeedback = false) {
   localStorage.setItem("1u-last-saved-story-id", storyId);
   if (state.scene === "bedroom") localStorage.setItem(getRoomStorageKey(storyId), JSON.stringify(state.position));
   if (showFeedback) {
+    sendProgressToBackend(storyId, state);
     showSceneToast("已保存 ♡");
     playSfx("confirm");
   }
@@ -880,7 +954,7 @@ function movementLoop(timestamp) {
 
   if (horizontal || vertical) {
     if (timestamp - lastWalkFrameTime >= 150) {
-      walkFrame = (walkFrame + 1) % 4;
+      walkFrame = (walkFrame + 1) % 6;
       roomPlayer.dataset.walkFrame = String(walkFrame);
       lastWalkFrameTime = timestamp;
     }
@@ -898,12 +972,16 @@ function movementLoop(timestamp) {
 
     if (bedroomGame.dataset.scene === "crossroads" && playerPosition.x >= 91) {
       setScene("shop-exterior", { x: 17, y: 72 }, "right");
+    } else if (bedroomGame.dataset.scene === "crossroads" && playerPosition.y <= 26 && playerPosition.x >= 35 && playerPosition.x <= 65) {
+      setScene("question-exterior", { x: 50, y: 79 }, "back");
     } else if (bedroomGame.dataset.scene === "shop-exterior" && playerPosition.x <= 14) {
       setScene("crossroads", { x: 88, y: 78 }, "left");
     } else if (bedroomGame.dataset.scene === "shop-exterior" && playerPosition.y <= 25 && playerPosition.x >= 35 && playerPosition.x <= 65) {
       setScene("shop-interior", { x: 25, y: 76 }, "back");
     } else if (bedroomGame.dataset.scene === "shop-interior" && playerPosition.y >= 83 && playerPosition.x <= 35) {
       setScene("shop-exterior", { x: 50, y: 36 }, "front");
+    } else if (bedroomGame.dataset.scene === "question-exterior" && playerPosition.y >= 83) {
+      setScene("crossroads", { x: 50, y: 30 }, "front");
     }
   } else {
     roomPlayer.classList.remove("is-walking");
@@ -996,6 +1074,21 @@ shelfHotspot.addEventListener("click", () => {
 questionDirection.addEventListener("click", () => {
   const closeEnough = bedroomGame.dataset.scene === "crossroads" && playerPosition.y <= 34 && playerPosition.x >= 35 && playerPosition.x <= 65;
   if (!closeEnough) return showSceneToast("沿着上方小路再走近一点。" );
+  setScene("question-exterior", { x: 50, y: 79 }, "back");
+});
+
+questionHouseDoor.addEventListener("click", () => {
+  if (!questionHouseDoor.classList.contains("is-near")) return showSceneToast("走到门口再进去吧。" );
+  setScene("question-interior", { x: 20, y: 72 }, "back");
+});
+
+questionHouseExit.addEventListener("click", () => {
+  if (!questionHouseExit.classList.contains("is-near")) return;
+  setScene("question-exterior", { x: 50, y: 44 }, "front");
+});
+
+questionSpot.addEventListener("click", () => {
+  if (!questionSpot.classList.contains("is-near")) return showSceneToast("走近桌边，再开始回答。" );
   questionPlaceStatus.textContent = "";
   questionPlacePanel.hidden = false;
   movementKeys.clear();
