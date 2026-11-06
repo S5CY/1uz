@@ -10,11 +10,14 @@
   <link rel="preload" as="image" href="assets/crossroads-night.png">
   <link rel="preload" as="image" href="assets/replay-shop-exterior.png">
   <link rel="preload" as="image" href="assets/replay-shop-interior.png">
+  <link rel="preload" as="image" href="assets/boy-walk-cycle-sheet.png">
+  <link rel="preload" as="image" href="assets/couple-interaction-strip.png">
+  <link rel="preload" as="image" href="assets/girl-desk-emotions-strip.png">
   <link rel="preload" as="image" href="assets/bedroom-game-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/crossroads-night-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/replay-shop-exterior-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/replay-shop-interior-mobile.png" media="(max-width: 700px)">
-  <link rel="stylesheet" href="css/style.css?v=20261106-0010">
+  <link rel="stylesheet" href="css/style.css?v=20261106-0020">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -147,6 +150,8 @@
         <img id="room-player-sprite" src="assets/boy-casual.png" alt="可以在卧室里走动的男生角色">
       </div>
 
+      <div class="couple-interaction" id="couple-interaction" aria-hidden="true" hidden></div>
+
       <button class="scene-hotspot bedroom-door" id="bedroom-door" type="button">出门 →</button>
       <button class="scene-hotspot crossroad-home" id="crossroad-home" type="button">← 回家</button>
       <div class="replay-direction" id="replay-direction" aria-hidden="true"><b>记忆小店</b><small>沿右边小路</small><span>→</span></div>
@@ -206,7 +211,8 @@
 
       <section class="replay-guide" id="replay-guide" hidden>
         <strong>11.1 · 场景重演</strong>
-        <p>你有 3 次机会。走近她，再点击她开始对话；失败后只能重新再来。</p>
+        <div class="guide-hearts" aria-label="三次机会"><span>♥</span><span>♥</span><span>♥</span></div>
+        <p><b>这三颗心就是你的机会。</b><br>选错会先播放她的反应，再失去一颗心；到达刷新点也不会补回来。三颗都用完，就要回记忆小店重新挑战。</p>
         <button id="replay-guide-close" type="button">我知道了</button>
       </section>
 
@@ -226,6 +232,6 @@
       </section>
     </section>
   </main>
-  <script src="js/script.js?v=20261106-0010"></script>
+  <script src="js/script.js?v=20261106-0020"></script>
 </body>
 </html>
