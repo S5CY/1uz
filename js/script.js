@@ -26,6 +26,7 @@ const bedroomGame = document.getElementById("bedroom-game");
 const roomPlayer = document.getElementById("room-player");
 const roomPlayerSprite = document.getElementById("room-player-sprite");
 const coupleInteraction = document.getElementById("couple-interaction");
+const bedSitInteraction = document.getElementById("bed-sit-interaction");
 const gameStoryId = document.getElementById("game-story-id");
 const gameSaveButton = document.getElementById("game-save-button");
 const gameExit = document.getElementById("game-exit");
@@ -157,7 +158,7 @@ const emotionPrompts = [
 
 const relationshipIssues = [
   "缺少报备",
-  "（小问题）不愿意带我送的皮筋、手链和项链（但是他说过戴着不舒服……）",
+  "不愿意戴我送的皮筋、手链和项链",
   "没时间陪我",
   "平时缺少沟通",
   "不会安慰人",
@@ -533,6 +534,9 @@ function setScene(scene, position = { x: 50, y: 72 }, facing = "front") {
   affectionPopup.hidden = true;
   memoryShelfModal.hidden = true;
   questionPlacePanel.hidden = true;
+  bedSitInteraction.hidden = true;
+  roomPlayer.hidden = false;
+  roomGirl.hidden = false;
   renderPlayerPosition();
   saveGameState(false);
   playSfx("soft");
@@ -598,6 +602,50 @@ function playGirlHmph() {
 function getHerTitle() {
   return onboardingAnswers[2] || "宝宝";
 }
+
+function getHisTitle() {
+  return onboardingAnswers[1] || "宝宝";
+}
+
+function sitTogetherOnBed() {
+  hideReplayDialogue();
+  roomPlayer.hidden = true;
+  roomGirl.hidden = true;
+  bedSitInteraction.hidden = false;
+  showAffectionGain("bedroom-sit-together", 5);
+  showSceneToast("你们一起坐在床边待了一会儿 ♡");
+  playSfx("confirm");
+  saveGameState(false);
+}
+
+function showBedroomReunionDialogue() {
+  showReplayDialogue({
+    speaker: "她",
+    text: "你来啦",
+    choices: [
+      {
+        label: `来啦，${getHerTitle()}`,
+        action: () => showReplayDialogue({
+          speaker: "她",
+          text: `想你了，${getHisTitle()}`,
+          choices: [
+            { label: "我也好想你...", action: sitTogetherOnBed },
+            { label: "那我陪你坐一会儿，好不好？", action: sitTogetherOnBed }
+          ]
+        })
+      },
+      { label: "离开", action: hideReplayDialogue }
+    ]
+  });
+}
+
+bedSitInteraction.addEventListener("click", () => {
+  bedSitInteraction.hidden = true;
+  roomPlayer.hidden = false;
+  roomGirl.hidden = false;
+  showSceneToast("你们站起来继续在房间里走走。");
+  playSfx("soft");
+});
 
 function updateAffectionDisplay() {
   const label = `${affectionLevel}%`;
@@ -1356,7 +1404,11 @@ roomGirl.addEventListener("click", () => {
     else showReplayDialogue({ speaker: "她", text: "哼～", onContinue: showFirstChoices });
     return;
   }
-  if (affectionLevel < 50) pendingAffectionHint = true;
+  if (affectionLevel >= 50) {
+    showBedroomReunionDialogue();
+    return;
+  }
+  pendingAffectionHint = true;
   playGirlHmph();
 });
 
