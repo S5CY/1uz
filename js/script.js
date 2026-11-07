@@ -66,6 +66,15 @@ const affectionGain = document.getElementById("affection-gain");
 const achievementBanner = document.getElementById("achievement-banner");
 const achievementClose = document.getElementById("achievement-close");
 const questionPlacePanel = document.getElementById("question-place-panel");
+const questionPlaceTitle = document.getElementById("question-place-title");
+const questionPlacePrompt = document.getElementById("question-place-prompt");
+const questionSectionMenu = document.getElementById("question-section-menu");
+const questionSectionButtons = [...document.querySelectorAll("[data-question-section]")];
+const questionFlow = document.getElementById("question-flow");
+const questionFlowContent = document.getElementById("question-flow-content");
+const questionFlowBack = document.getElementById("question-flow-back");
+const questionProgressBar = document.getElementById("question-progress-bar");
+const questionProgressText = document.getElementById("question-progress-text");
 const questionPlaceAnswer = document.getElementById("question-place-answer");
 const questionPlaceSave = document.getElementById("question-place-save");
 const questionPlaceBack = document.getElementById("question-place-back");
@@ -128,6 +137,25 @@ let replayCheckpoint = "start";
 let replayStep = "start";
 let replayDialogueAction = null;
 let pendingAffectionHint = false;
+let activeQuestionSection = null;
+let activeQuestionStep = 0;
+
+const soulQuestions = [
+  "你还记得当初因为什么在一起的吗？",
+  "你觉得咱们走到这一步，问题到底出在哪？",
+  "如果再给咱们一个机会，你最希望我改掉什么？",
+  "如果复合了，你最想为这段关系做点什么？",
+  "要是咱们复合之后没能走到最后，你觉得最有可能的原因是什么？"
+];
+
+const relationshipIssues = [
+  "缺少报备",
+  "（小问题）不愿意带我送的皮筋、手链和项链（但是他说过戴着不舒服……）",
+  "没时间陪我",
+  "平时缺少沟通",
+  "不会安慰人",
+  "没耐心"
+];
 
 function getStoryStorageKey(storyId) {
   return `1u-story-${encodeURIComponent(storyId)}-onboarding`;
@@ -568,14 +596,15 @@ function updateAffectionDisplay() {
   document.documentElement.style.setProperty("--affection", label);
 }
 
-function showAffectionGain(rewardId) {
+function showAffectionGain(rewardId, amount = 5) {
   if (rewardId && memoryRewardFlags.has(rewardId)) {
     showSceneToast("这个记忆点的好感度已经记录过了 ♡");
     return false;
   }
   if (rewardId) memoryRewardFlags.add(rewardId);
-  affectionLevel = Math.min(100, affectionLevel + 5);
+  affectionLevel = Math.min(100, affectionLevel + amount);
   updateAffectionDisplay();
+  affectionGain.textContent = `♥ 好感度 +${amount}`;
   affectionGain.hidden = false;
   affectionGain.getAnimations().forEach((animation) => animation.cancel());
   affectionGain.animate(
@@ -583,7 +612,9 @@ function showAffectionGain(rewardId) {
     { duration: 1900, easing: "ease-out" }
   );
   window.setTimeout(() => { affectionGain.hidden = true; }, 1900);
-  saveGameState(false);
+  const state = saveGameState(false);
+  const storyId = localStorage.getItem("1u-current-story-id");
+  if (state && storyId) sendProgressToBackend(storyId, state);
   return true;
 }
 
@@ -616,7 +647,7 @@ async function sendAnswerToBackend(entry) {
       body: JSON.stringify({
         storyId,
         sessionId: getSessionId(),
-        eventType: entry.scene === "question-room" ? "written-answer" : "choice",
+        eventType: entry.scene.startsWith("question-room") ? "written-answer" : "choice",
         scene: entry.scene,
         prompt: entry.prompt,
         answer: entry.answer,
@@ -899,7 +930,13 @@ async function sendProgressToBackend(storyId, state) {
         scene: state.scene,
         affection: state.affection,
         memory111Complete: state.memory111Complete,
-        payload: { position: state.position, facing: state.facing, savedAt: state.savedAt }
+        payload: {
+          position: state.position,
+          facing: state.facing,
+          memoryRewardFlags: state.memoryRewardFlags,
+          onboardingAnswers,
+          savedAt: state.savedAt
+        }
       })
     });
   } catch {
@@ -909,7 +946,7 @@ async function sendProgressToBackend(storyId, state) {
 
 function saveGameState(showFeedback = false) {
   const storyId = localStorage.getItem("1u-current-story-id");
-  if (!storyId) return;
+  if (!storyId) return null;
   const currentScene = bedroomGame.dataset.scene || "bedroom";
   const state = {
     scene: currentScene === "memory-bedroom" ? "shop-interior" : currentScene,
@@ -931,6 +968,7 @@ function saveGameState(showFeedback = false) {
     showSceneToast("已保存 ♡");
     playSfx("confirm");
   }
+  return state;
 }
 
 function savePlayerPosition() { saveGameState(false); }
@@ -1087,24 +1125,128 @@ questionHouseExit.addEventListener("click", () => {
   setScene("question-exterior", { x: 50, y: 44 }, "front");
 });
 
+function updateQuestionSectionBadges() {
+  questionSectionButtons.forEach((button) => {
+    const rewardId = button.dataset.questionSection === "relationship"
+      ? "question-relationship"
+      : button.dataset.questionSection === "soul" ? "question-soul" : "";
+    button.classList.toggle("is-complete", Boolean(rewardId && memoryRewardFlags.has(rewardId)));
+  });
+}
+
+function showQuestionMenu() {
+  activeQuestionSection = null;
+  activeQuestionStep = 0;
+  questionPlaceTitle.textContent = "问题小屋";
+  questionPlacePrompt.textContent = "想从哪里开始了解彼此？";
+  questionSectionMenu.hidden = false;
+  questionFlow.hidden = true;
+  questionPlaceStatus.textContent = "";
+  questionPlaceAnswer.value = "";
+  updateQuestionSectionBadges();
+}
+
+function renderQuestionFlow() {
+  questionPlaceStatus.textContent = "";
+  questionPlaceAnswer.value = "";
+  questionFlowContent.replaceChildren();
+
+  if (activeQuestionSection === "relationship") {
+    questionPlaceTitle.textContent = "你们之间的问题";
+    const total = relationshipIssues.length + 1;
+    questionProgressText.textContent = `${Math.min(activeQuestionStep + 1, total)} / ${total}`;
+    questionProgressBar.style.width = `${((activeQuestionStep + 1) / total) * 100}%`;
+    if (activeQuestionStep === 0) {
+      questionPlacePrompt.textContent = "在看她认为的问题以前，先写下你觉得你们之间最大的问题。";
+      questionFlowContent.innerHTML = '<div class="question-flow-card"><strong>你认为的问题是什么？</strong><p>可以写一个，也可以写很多个。</p></div>';
+      questionPlaceAnswer.hidden = false;
+      questionPlaceAnswer.placeholder = "把你认为的问题写在这里……";
+      questionPlaceSave.textContent = "保存并看看她的想法";
+      return;
+    }
+    const issue = relationshipIssues[activeQuestionStep - 1];
+    questionPlacePrompt.textContent = "这是她认为你们之间存在的问题。";
+    questionFlowContent.innerHTML = `<div class="question-flow-card"><span class="question-issue-count">她认为的问题 ${activeQuestionStep} / ${relationshipIssues.length}</span><strong>${issue}</strong><p>先认真看完，再继续下一条。</p></div>`;
+    questionPlaceAnswer.hidden = true;
+    questionPlaceSave.textContent = activeQuestionStep === relationshipIssues.length ? "我看完了" : "看下一条";
+    return;
+  }
+
+  questionPlaceTitle.textContent = "灵魂考问";
+  questionPlacePrompt.textContent = soulQuestions[activeQuestionStep];
+  questionProgressText.textContent = `${activeQuestionStep + 1} / ${soulQuestions.length}`;
+  questionProgressBar.style.width = `${((activeQuestionStep + 1) / soulQuestions.length) * 100}%`;
+  questionFlowContent.innerHTML = `<div class="question-flow-card"><strong>认真回答，不用急。</strong><p>答案会保存下来，让她看到你的真实想法。</p></div>`;
+  questionPlaceAnswer.hidden = false;
+  questionPlaceAnswer.placeholder = "把真实答案写在这里……";
+  questionPlaceSave.textContent = activeQuestionStep === soulQuestions.length - 1 ? "完成灵魂考问" : "保存并继续";
+}
+
+function startQuestionSection(section) {
+  if (section === "his-heart" || section === "her-heart") {
+    questionPlaceStatus.textContent = section === "his-heart" ? "「你的内心」题目正在等你们一起确认。" : "「她的内心」题目正在等她一起确认。";
+    playSfx("soft");
+    return;
+  }
+  activeQuestionSection = section;
+  activeQuestionStep = 0;
+  questionSectionMenu.hidden = true;
+  questionFlow.hidden = false;
+  renderQuestionFlow();
+  playSfx("message");
+}
+
 questionSpot.addEventListener("click", () => {
   if (!questionSpot.classList.contains("is-near")) return showSceneToast("走近桌边，再开始回答。" );
-  questionPlaceStatus.textContent = "";
+  showQuestionMenu();
   questionPlacePanel.hidden = false;
   movementKeys.clear();
   playSfx("message");
 });
 
+questionSectionButtons.forEach((button) => {
+  button.addEventListener("click", () => startQuestionSection(button.dataset.questionSection));
+});
+
 questionPlaceSave.addEventListener("click", () => {
-  const answer = questionPlaceAnswer.value.trim();
-  if (!answer) {
-    questionPlaceStatus.textContent = "先写下你的答案呀。";
+  if (activeQuestionSection === "relationship") {
+    if (activeQuestionStep === 0) {
+      const answer = questionPlaceAnswer.value.trim();
+      if (!answer) return void (questionPlaceStatus.textContent = "先写下你认为的问题呀。");
+      recordAnswer("你认为你们之间最大的问题是什么？", answer, "question-room-relationship");
+    } else {
+      const issue = relationshipIssues[activeQuestionStep - 1];
+      recordAnswer(`她认为的问题 ${activeQuestionStep}`, `已阅读：${issue}`, "question-room-relationship");
+    }
+    activeQuestionStep += 1;
+    if (activeQuestionStep > relationshipIssues.length) {
+      const rewarded = showAffectionGain("question-relationship", 5);
+      showQuestionMenu();
+      questionPlaceStatus.textContent = rewarded ? "你们之间的问题已看完，好感度 +5 ♡" : "你已经看完过这一部分了，回答已重新保存 ♡";
+    } else {
+      renderQuestionFlow();
+    }
+    playSfx("confirm");
     return;
   }
-  recordAnswer("你觉得一段关系里，什么最能让你有安全感？", answer, "question-room");
-  questionPlaceStatus.textContent = "回答已保存 ♡";
-  playSfx("confirm");
+
+  if (activeQuestionSection === "soul") {
+    const answer = questionPlaceAnswer.value.trim();
+    if (!answer) return void (questionPlaceStatus.textContent = "这道题需要留下真实答案呀。");
+    recordAnswer(soulQuestions[activeQuestionStep], answer, "question-room-soul");
+    activeQuestionStep += 1;
+    if (activeQuestionStep >= soulQuestions.length) {
+      const rewarded = showAffectionGain("question-soul", 10);
+      showQuestionMenu();
+      questionPlaceStatus.textContent = rewarded ? "灵魂考问完成，好感度 +10 ♡" : "灵魂考问已重新完成，回答已更新 ♡";
+    } else {
+      renderQuestionFlow();
+    }
+    playSfx("confirm");
+  }
 });
+
+questionFlowBack.addEventListener("click", showQuestionMenu);
 
 questionPlaceBack.addEventListener("click", () => {
   questionPlacePanel.hidden = true;
@@ -1136,7 +1278,7 @@ roomGirl.addEventListener("click", () => {
     else showReplayDialogue({ speaker: "她", text: "哼～", onContinue: showFirstChoices });
     return;
   }
-  if (affectionLevel < 30) pendingAffectionHint = true;
+  if (affectionLevel < 50) pendingAffectionHint = true;
   playGirlHmph();
 });
 
@@ -1181,7 +1323,7 @@ achievementClose.addEventListener("click", () => {
 npcDialogueClose.addEventListener("click", () => {
   if (pendingAffectionHint) {
     pendingAffectionHint = false;
-    npcDialogueText.textContent = `提示：好感度达到 30% 后，才能和${getHerTitle()}好好沟通。`;
+    npcDialogueText.textContent = `提示：好感度达到 50% 后，才能和${getHerTitle()}好好沟通。`;
     playSfx("message");
     return;
   }

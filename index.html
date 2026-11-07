@@ -23,7 +23,7 @@
   <link rel="preload" as="image" href="assets/memory-bedroom-game-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/question-house-exterior-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/question-house-interior-mobile.png" media="(max-width: 700px)">
-  <link rel="stylesheet" href="css/style.css?v=20261106-0040">
+  <link rel="stylesheet" href="css/style.css?v=20261106-0050">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -217,13 +217,25 @@
 
       <section class="question-place-panel" id="question-place-panel" aria-label="问题小屋" hidden>
         <span class="question-place-kicker">QUESTION ROOM</span>
-        <h2>问题小屋</h2>
-        <p id="question-place-prompt">你觉得一段关系里，什么最能让你有安全感？</p>
-        <textarea id="question-place-answer" maxlength="300" placeholder="把真实答案写在这里……"></textarea>
-        <div>
-          <button id="question-place-save" type="button">保存回答</button>
-          <button id="question-place-back" type="button">回到岔路</button>
+        <h2 id="question-place-title">问题小屋</h2>
+        <p id="question-place-prompt">想从哪里开始了解彼此？</p>
+        <div class="question-section-menu" id="question-section-menu">
+          <button type="button" data-question-section="his-heart"><b>01</b><span>你的内心</span><small>下一次开放</small></button>
+          <button type="button" data-question-section="her-heart"><b>02</b><span>她的内心</span><small>下一次开放</small></button>
+          <button type="button" data-question-section="relationship"><b>03</b><span>你们之间的问题</span><small>一起看见问题</small></button>
+          <button type="button" data-question-section="soul"><b>04</b><span>灵魂考问</span><small>五个认真回答</small></button>
         </div>
+        <section class="question-flow" id="question-flow" hidden>
+          <div class="question-progress"><i id="question-progress-bar"></i></div>
+          <small id="question-progress-text"></small>
+          <div id="question-flow-content"></div>
+          <textarea id="question-place-answer" maxlength="600" placeholder="把真实答案写在这里……"></textarea>
+          <div class="question-flow-actions">
+            <button id="question-place-save" type="button">继续</button>
+            <button id="question-flow-back" type="button">返回四个选项</button>
+          </div>
+        </section>
+        <button class="question-place-close" id="question-place-back" type="button">离开问题小屋</button>
         <small id="question-place-status" aria-live="polite"></small>
       </section>
 
@@ -254,7 +266,7 @@
       </section>
     </section>
   </main>
-  <script src="js/config.js?v=20261106-0040"></script>
-  <script src="js/script.js?v=20261106-0040"></script>
+  <script src="js/config.js?v=20261106-0050"></script>
+  <script src="js/script.js?v=20261106-0050"></script>
 </body>
 </html>
