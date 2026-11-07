@@ -75,6 +75,7 @@ const questionFlowContent = document.getElementById("question-flow-content");
 const questionFlowBack = document.getElementById("question-flow-back");
 const questionProgressBar = document.getElementById("question-progress-bar");
 const questionProgressText = document.getElementById("question-progress-text");
+const questionStarRating = document.getElementById("question-star-rating");
 const questionPlaceAnswer = document.getElementById("question-place-answer");
 const questionPlaceSave = document.getElementById("question-place-save");
 const questionPlaceBack = document.getElementById("question-place-back");
@@ -139,13 +140,19 @@ let replayDialogueAction = null;
 let pendingAffectionHint = false;
 let activeQuestionSection = null;
 let activeQuestionStep = 0;
+let selectedEmotionRating = 0;
 
 const soulQuestions = [
-  "你还记得当初因为什么在一起的吗？",
-  "你觉得咱们走到这一步，问题到底出在哪？",
-  "如果再给咱们一个机会，你最希望我改掉什么？",
-  "如果复合了，你最想为这段关系做点什么？",
-  "要是咱们复合之后没能走到最后，你觉得最有可能的原因是什么？"
+  "你还记得当初是什么让我们决定在一起的吗？",
+  "你觉得我们现在相处中最需要解决的问题是什么？",
+  "为了让我们相处得更好，你最希望我改掉什么？",
+  "你最想为这段关系做点什么？",
+  "如果以后我们没能走到最后，你觉得最有可能的原因是什么？"
+];
+
+const emotionPrompts = [
+  "开心", "安全感", "被理解", "被重视", "被爱", "信任", "想念", "内耗",
+  "难过", "委屈", "生气", "失望", "焦虑", "害怕失去", "还想继续努力"
 ];
 
 const relationshipIssues = [
@@ -1127,9 +1134,13 @@ questionHouseExit.addEventListener("click", () => {
 
 function updateQuestionSectionBadges() {
   questionSectionButtons.forEach((button) => {
-    const rewardId = button.dataset.questionSection === "relationship"
-      ? "question-relationship"
-      : button.dataset.questionSection === "soul" ? "question-soul" : "";
+    const rewardIds = {
+      "his-heart": "question-his-heart",
+      "her-heart": "question-her-heart",
+      relationship: "question-relationship",
+      soul: "question-soul"
+    };
+    const rewardId = rewardIds[button.dataset.questionSection] || "";
     button.classList.toggle("is-complete", Boolean(rewardId && memoryRewardFlags.has(rewardId)));
   });
 }
@@ -1143,32 +1154,72 @@ function showQuestionMenu() {
   questionFlow.hidden = true;
   questionPlaceStatus.textContent = "";
   questionPlaceAnswer.value = "";
+  questionStarRating.hidden = true;
   updateQuestionSectionBadges();
+}
+
+function renderStarRating() {
+  questionStarRating.replaceChildren();
+  questionStarRating.hidden = false;
+  for (let rating = 1; rating <= 5; rating += 1) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "★";
+    button.setAttribute("aria-label", `${rating} 星`);
+    button.classList.toggle("is-selected", rating <= selectedEmotionRating);
+    button.addEventListener("click", () => {
+      selectedEmotionRating = rating;
+      renderStarRating();
+      playSfx("toggle");
+    });
+    questionStarRating.appendChild(button);
+  }
 }
 
 function renderQuestionFlow() {
   questionPlaceStatus.textContent = "";
   questionPlaceAnswer.value = "";
   questionFlowContent.replaceChildren();
+  questionStarRating.hidden = true;
+
+  if (activeQuestionSection === "his-heart" || activeQuestionSection === "her-heart") {
+    const guessingHer = activeQuestionSection === "her-heart";
+    const emotion = emotionPrompts[activeQuestionStep];
+    selectedEmotionRating = 0;
+    questionPlaceTitle.textContent = guessingHer ? "她的内心" : "你的内心";
+    questionPlacePrompt.textContent = guessingHer
+      ? `你觉得她现在对「${emotion}」的感受有几颗星？`
+      : `你现在对「${emotion}」的感受有几颗星？`;
+    questionProgressText.textContent = `${activeQuestionStep + 1} / ${emotionPrompts.length}`;
+    questionProgressBar.style.width = `${((activeQuestionStep + 1) / emotionPrompts.length) * 100}%`;
+    questionFlowContent.innerHTML = `<div class="question-flow-card"><strong>${emotion}</strong><p>${guessingHer ? "按照你对她的了解来猜。" : "没有正确答案，只需要诚实。"}</p></div>`;
+    renderStarRating();
+    questionPlaceAnswer.hidden = false;
+    questionPlaceAnswer.placeholder = "为什么这样选？（选填）";
+    questionPlaceSave.textContent = activeQuestionStep === emotionPrompts.length - 1 ? "完成这一部分" : "保存并继续";
+    return;
+  }
 
   if (activeQuestionSection === "relationship") {
     questionPlaceTitle.textContent = "你们之间的问题";
-    const total = relationshipIssues.length + 1;
-    questionProgressText.textContent = `${Math.min(activeQuestionStep + 1, total)} / ${total}`;
+    const issueIndex = Math.floor(activeQuestionStep / 2);
+    const enteringHisThought = activeQuestionStep % 2 === 0;
+    const total = relationshipIssues.length * 2;
+    questionProgressText.textContent = `第 ${issueIndex + 1} 轮 / ${relationshipIssues.length}`;
     questionProgressBar.style.width = `${((activeQuestionStep + 1) / total) * 100}%`;
-    if (activeQuestionStep === 0) {
-      questionPlacePrompt.textContent = "在看她认为的问题以前，先写下你觉得你们之间最大的问题。";
-      questionFlowContent.innerHTML = '<div class="question-flow-card"><strong>你认为的问题是什么？</strong><p>可以写一个，也可以写很多个。</p></div>';
+    if (enteringHisThought) {
+      questionPlacePrompt.textContent = `第 ${issueIndex + 1} 个：你觉得你们之间还有什么问题？`;
+      questionFlowContent.innerHTML = `<div class="question-flow-card"><strong>先写下你的想法</strong><p>提交以后，才会看到她对应的第 ${issueIndex + 1} 个想法。</p></div>`;
       questionPlaceAnswer.hidden = false;
       questionPlaceAnswer.placeholder = "把你认为的问题写在这里……";
-      questionPlaceSave.textContent = "保存并看看她的想法";
+      questionPlaceSave.textContent = "提交并看看她的想法";
       return;
     }
-    const issue = relationshipIssues[activeQuestionStep - 1];
+    const issue = relationshipIssues[issueIndex];
     questionPlacePrompt.textContent = "这是她认为你们之间存在的问题。";
-    questionFlowContent.innerHTML = `<div class="question-flow-card"><span class="question-issue-count">她认为的问题 ${activeQuestionStep} / ${relationshipIssues.length}</span><strong>${issue}</strong><p>先认真看完，再继续下一条。</p></div>`;
+    questionFlowContent.innerHTML = `<div class="question-flow-card"><span class="question-issue-count">她认为的问题 ${issueIndex + 1} / ${relationshipIssues.length}</span><strong>${issue}</strong><p>看完以后，再进入下一轮。</p></div>`;
     questionPlaceAnswer.hidden = true;
-    questionPlaceSave.textContent = activeQuestionStep === relationshipIssues.length ? "我看完了" : "看下一条";
+    questionPlaceSave.textContent = issueIndex === relationshipIssues.length - 1 ? "我全部看完了" : "进入下一轮";
     return;
   }
 
@@ -1183,11 +1234,6 @@ function renderQuestionFlow() {
 }
 
 function startQuestionSection(section) {
-  if (section === "his-heart" || section === "her-heart") {
-    questionPlaceStatus.textContent = section === "his-heart" ? "「你的内心」题目正在等你们一起确认。" : "「她的内心」题目正在等她一起确认。";
-    playSfx("soft");
-    return;
-  }
   activeQuestionSection = section;
   activeQuestionStep = 0;
   questionSectionMenu.hidden = true;
@@ -1209,17 +1255,46 @@ questionSectionButtons.forEach((button) => {
 });
 
 questionPlaceSave.addEventListener("click", () => {
+  if (activeQuestionSection === "his-heart" || activeQuestionSection === "her-heart") {
+    if (!selectedEmotionRating) return void (questionPlaceStatus.textContent = "先选择 1–5 颗星呀。");
+    const guessingHer = activeQuestionSection === "her-heart";
+    const emotion = emotionPrompts[activeQuestionStep];
+    const reason = questionPlaceAnswer.value.trim();
+    const answer = `${selectedEmotionRating}/5 星${reason ? `；原因：${reason}` : "；未填写原因"}`;
+    recordAnswer(
+      guessingHer ? `你觉得她对「${emotion}」的感受有几颗星？` : `你对「${emotion}」的感受有几颗星？`,
+      answer,
+      guessingHer ? "question-room-her-heart" : "question-room-his-heart"
+    );
+    activeQuestionStep += 1;
+    if (activeQuestionStep >= emotionPrompts.length) {
+      const rewardId = guessingHer ? "question-her-heart" : "question-his-heart";
+      const amount = guessingHer ? 5 : 10;
+      const rewarded = showAffectionGain(rewardId, amount);
+      showQuestionMenu();
+      questionPlaceStatus.textContent = rewarded
+        ? `${guessingHer ? "她的内心" : "你的内心"}已完成，好感度 +${amount} ♡`
+        : "这一部分已重新完成，最新答案已经保存 ♡";
+    } else {
+      renderQuestionFlow();
+    }
+    playSfx("confirm");
+    return;
+  }
+
   if (activeQuestionSection === "relationship") {
-    if (activeQuestionStep === 0) {
+    const issueIndex = Math.floor(activeQuestionStep / 2);
+    const enteringHisThought = activeQuestionStep % 2 === 0;
+    if (enteringHisThought) {
       const answer = questionPlaceAnswer.value.trim();
       if (!answer) return void (questionPlaceStatus.textContent = "先写下你认为的问题呀。");
-      recordAnswer("你认为你们之间最大的问题是什么？", answer, "question-room-relationship");
+      recordAnswer(`你认为的问题 ${issueIndex + 1}`, answer, "question-room-relationship");
     } else {
-      const issue = relationshipIssues[activeQuestionStep - 1];
-      recordAnswer(`她认为的问题 ${activeQuestionStep}`, `已阅读：${issue}`, "question-room-relationship");
+      const issue = relationshipIssues[issueIndex];
+      recordAnswer(`她认为的问题 ${issueIndex + 1}`, `已阅读：${issue}`, "question-room-relationship");
     }
     activeQuestionStep += 1;
-    if (activeQuestionStep > relationshipIssues.length) {
+    if (activeQuestionStep >= relationshipIssues.length * 2) {
       const rewarded = showAffectionGain("question-relationship", 5);
       showQuestionMenu();
       questionPlaceStatus.textContent = rewarded ? "你们之间的问题已看完，好感度 +5 ♡" : "你已经看完过这一部分了，回答已重新保存 ♡";

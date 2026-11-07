@@ -23,7 +23,7 @@
   <link rel="preload" as="image" href="assets/memory-bedroom-game-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/question-house-exterior-mobile.png" media="(max-width: 700px)">
   <link rel="preload" as="image" href="assets/question-house-interior-mobile.png" media="(max-width: 700px)">
-  <link rel="stylesheet" href="css/style.css?v=20261106-0050">
+  <link rel="stylesheet" href="css/style.css?v=20261106-0060">
 </head>
 <body>
   <main class="game-shell" aria-labelledby="game-title">
@@ -220,8 +220,8 @@
         <h2 id="question-place-title">问题小屋</h2>
         <p id="question-place-prompt">想从哪里开始了解彼此？</p>
         <div class="question-section-menu" id="question-section-menu">
-          <button type="button" data-question-section="his-heart"><b>01</b><span>你的内心</span><small>下一次开放</small></button>
-          <button type="button" data-question-section="her-heart"><b>02</b><span>她的内心</span><small>下一次开放</small></button>
+          <button type="button" data-question-section="his-heart"><b>01</b><span>你的内心</span><small>记录你的真实感受</small></button>
+          <button type="button" data-question-section="her-heart"><b>02</b><span>她的内心</span><small>猜猜她的感受</small></button>
           <button type="button" data-question-section="relationship"><b>03</b><span>你们之间的问题</span><small>一起看见问题</small></button>
           <button type="button" data-question-section="soul"><b>04</b><span>灵魂考问</span><small>五个认真回答</small></button>
         </div>
@@ -229,6 +229,7 @@
           <div class="question-progress"><i id="question-progress-bar"></i></div>
           <small id="question-progress-text"></small>
           <div id="question-flow-content"></div>
+          <div class="question-star-rating" id="question-star-rating" aria-label="五星评分" hidden></div>
           <textarea id="question-place-answer" maxlength="600" placeholder="把真实答案写在这里……"></textarea>
           <div class="question-flow-actions">
             <button id="question-place-save" type="button">继续</button>
@@ -266,7 +267,7 @@
       </section>
     </section>
   </main>
-  <script src="js/config.js?v=20261106-0050"></script>
-  <script src="js/script.js?v=20261106-0050"></script>
+  <script src="js/config.js?v=20261106-0060"></script>
+  <script src="js/script.js?v=20261106-0060"></script>
 </body>
 </html>

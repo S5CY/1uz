@@ -549,6 +549,9 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .question-section-menu button span { color:#4f4471; font:700 1.08rem/1.3 "Kaiti SC","STKaiti",sans-serif; }
 .question-section-menu button small { min-height:0; margin:3px 0 0; font-size:.72rem; }
 .question-section-menu button.is-complete::after { content:"✓ 已完成"; grid-column:2; color:#d0639e; font-size:.7rem; }
+.question-section-menu button[data-question-section="soul"] { border:2px solid #d6a35d; background:linear-gradient(145deg,rgba(255,250,227,.92),rgba(238,226,255,.9)); box-shadow:0 0 0 4px rgba(238,188,105,.14),0 12px 28px rgba(94,67,122,.16); }
+.question-section-menu button[data-question-section="soul"] b { color:#c98631; font-size:1.45rem; }
+.question-section-menu button[data-question-section="soul"] span { color:#7c4f74; font-size:1.16rem; }
 .question-flow[hidden],.question-section-menu[hidden] { display:none; }
 .question-progress { height:8px; overflow:hidden; margin:4px 0 0; border-radius:999px; background:#dedff0; }
 .question-progress i { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#8ea5df,#d68cb7); transition:width .35s ease; }
@@ -556,6 +559,10 @@ body.bedroom-game-active .utility-controls { z-index: 70; }
 .question-flow-card strong { display:block; margin-bottom:8px; color:#5a4b78; font:700 1.18rem/1.45 "Kaiti SC","STKaiti",sans-serif; }
 .question-flow-card p { margin:0; color:#796b91; font-size:.9rem; }
 .question-issue-count { color:#b6699b; font-weight:800; }
+.question-star-rating { display:flex; justify-content:center; gap:8px; margin:14px 0; }
+.question-star-rating[hidden] { display:none; }
+.question-star-rating button { min-width:48px; min-height:48px; padding:0; border:0; color:#c8c7d8; background:transparent; font-size:2rem; line-height:1; text-shadow:0 3px 8px rgba(74,57,108,.12); }
+.question-star-rating button.is-selected { color:#f1ad48; transform:scale(1.08); text-shadow:0 0 12px rgba(241,173,72,.45); }
 .question-flow-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
 .question-flow-actions button:first-child { color:white; background:linear-gradient(145deg,#7d91ce,#a988cf); }
 .question-place-close { width:100%; margin-top:12px; }
@@ -700,8 +707,19 @@ input,
   .bedroom-game[data-scene="memory-bedroom"] .room-girl { left: 73%; top: 46%; width: clamp(92px,27vw,118px); }
   .couple-interaction { left: 72%; top: 48%; width: clamp(125px,36vw,165px); }
   .question-direction { top:28%; }
-  .question-place-panel { width:calc(100vw - 24px); padding:27px 20px; }
-  .question-place-panel > div { grid-template-columns:1fr; }
+  .question-place-panel { top:50%; width:calc(100vw - 14px); max-height:calc(100dvh - 92px); padding:20px 13px 15px; border-radius:21px; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .question-place-panel h2 { margin:7px 0 9px; font-size:1.5rem; }
+  .question-place-panel p { margin-bottom:11px; font-size:1rem; }
+  .question-section-menu { grid-template-columns:1fr 1fr; gap:8px; }
+  .question-section-menu button { min-height:88px; padding:11px 9px; column-gap:7px; }
+  .question-section-menu button b { font-size:.9rem; }
+  .question-section-menu button span { font-size:.93rem; }
+  .question-flow-card { margin:9px 0; padding:14px 11px; }
+  .question-place-panel textarea { min-height:88px; padding:12px; }
+  .question-star-rating { gap:2px; margin:8px 0; }
+  .question-star-rating button { min-width:40px; min-height:40px; font-size:1.72rem; }
+  .question-flow-actions { grid-template-columns:1fr; gap:7px; margin-top:9px; }
+  .question-place-close { margin-top:8px; }
   .touch-controls { display: grid; }
 }
 
