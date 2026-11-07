@@ -450,6 +450,9 @@ onboardingForm.addEventListener("submit", (event) => {
   } else {
     const storyId = localStorage.getItem("1u-current-story-id");
     localStorage.setItem(getStoryStorageKey(storyId), JSON.stringify(onboardingAnswers));
+    onboardingQuestions.forEach((question, index) => {
+      recordAnswer(question.question, onboardingAnswers[index], "onboarding");
+    });
     dialogueStatus.textContent = "存档完成，正在进入卧室……";
     window.setTimeout(() => enterBedroomGame(), 650);
   }
